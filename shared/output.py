@@ -11,7 +11,41 @@ if TYPE_CHECKING:
 
 class DiscordFormatter:
     """Formats discovery results for Discord markdown."""
-    
+
+    @staticmethod
+    def send_raw(text: str, webhook_url: str, username: str = "GEO Research Bot") -> None:
+        """Send arbitrary markdown text to Discord, chunking if needed."""
+        import httpx
+
+        MAX_LEN = 1900
+        chunks = []
+        current = ""
+
+        for line in text.splitlines(keepends=True):
+            if len(current) + len(line) > MAX_LEN:
+                if current.strip():
+                    chunks.append(current.strip())
+                current = line
+            else:
+                current += line
+
+        if current.strip():
+            chunks.append(current.strip())
+
+        for i, chunk in enumerate(chunks):
+            if i > 0:
+                chunk = "**(cont'd)**\n\n" + chunk
+            payload = {
+                "content": chunk,
+                "username": username,
+            }
+            try:
+                resp = httpx.post(webhook_url, json=payload, timeout=15)
+                if resp.status_code not in (200, 204):
+                    print(f"  ⚠️ Discord chunk {i + 1} failed: {resp.status_code}")
+            except Exception as e:
+                print(f"  ⚠️ Discord chunk {i + 1} error: {e}")
+
     @staticmethod
     def format_prospect(p: "Prospect", index: int) -> str:
         """Format a single prospect for Discord."""

@@ -22,7 +22,7 @@ PLIST_PATH = Path.home() / "Library" / "LaunchAgents" / f"{PLIST_NAME}.plist"
 
 # Resolve paths relative to this script
 SCRIPT_DIR = Path(__file__).parent.resolve()
-GEO_SCRIPT = SCRIPT_DIR / "geo_orchestrator.py"
+GEO_SCRIPT = SCRIPT_DIR / "daily_pipeline.py"
 LOG_FILE = SCRIPT_DIR / "geo_orchestrator.log"
 ERR_LOG_FILE = SCRIPT_DIR / "geo_orchestrator_error.log"
 
@@ -188,7 +188,7 @@ def print_cron():
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Schedule the GEO Orchestrator to run daily at 9am"
+        description="Schedule the GEO Orchestrator + Research Agent to run daily at 7am ET"
     )
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--install", action="store_true", help="Install the daily schedule")
