@@ -88,10 +88,13 @@ def run_daily_research(test_mode: bool = False) -> dict[str, Any]:
 
 def on_demand_query(query: str) -> str:
     """Generate an outreach angle for a specific topic or vertical."""
+    from dotenv import load_dotenv
     from openai import OpenAI
 
+    load_dotenv(override=True)
+
     NOUS_API_KEY = os.environ.get("NOUS_API_KEY", "")
-    NOUS_BASE_URL = os.environ.get("NOUS_BASE_URL", "https://inference-api.nousresearch.com/v1")
+    NOUS_BASE_URL = os.environ.get("NOUS_BASE_URL", "https://gateway.nous.uno/v1")
     DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL", "moonshotai/kimi-k2.6")
 
     client = OpenAI(base_url=NOUS_BASE_URL, api_key=NOUS_API_KEY)

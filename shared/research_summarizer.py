@@ -7,12 +7,14 @@ import os
 from datetime import date
 from typing import Any
 
+from dotenv import load_dotenv
 from openai import OpenAI
 
+load_dotenv(override=True)
 
 # Nous API config
 NOUS_API_KEY = os.environ.get("NOUS_API_KEY", "")
-NOUS_BASE_URL = os.environ.get("NOUS_BASE_URL", "https://inference-api.nousresearch.com/v1")
+NOUS_BASE_URL = os.environ.get("NOUS_BASE_URL", "https://gateway.nous.uno/v1")
 DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL", "moonshotai/kimi-k2.6")
 
 
@@ -62,7 +64,7 @@ OUTPUT FORMAT:
 """
 
 
-def summarize_stories(stories: list[dict[str, Any]], max_stories: int = 8) -> dict[str, Any]:
+def summarize_stories(stories: list[dict[str, Any]], max_stories: int = 5) -> dict[str, Any]:
     """
     Send stories to LLM and get back structured briefing.
 
@@ -105,10 +107,9 @@ def summarize_stories(stories: list[dict[str, Any]], max_stories: int = 8) -> di
     print("[research] Sending to LLM for summarization...")
     response = client.chat.completions.create(
         model=DEFAULT_MODEL,
-        max_tokens=4096,
+        max_tokens=8192,
         messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
+            {"role": "user", "content": SYSTEM_PROMPT + "\n\n" + user_prompt},
         ],
     )
 
