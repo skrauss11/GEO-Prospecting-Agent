@@ -1,0 +1,30 @@
+# Environment & secrets
+.env
+.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# macOS
+.DS_Store
+
+# Generated outputs (re-created on each run)
+snapshots/
+data/
+proposals/
+archive/
+*.log
+geoscore_results.json
+geoscore_results.csv
+previous_reports.json
+
+# IDE
+.vscode/
+.idea/
+
+# Dependencies
+venv/
+env/

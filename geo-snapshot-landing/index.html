@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Free GEO Snapshot — MadTech Growth</title>
+  <meta name="description" content="Get a free AI visibility audit of your website. See how AI agents see your brand — in 60 seconds." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0B1120;
+      --terracotta: #C45D3E;
+      --terracotta-light: #d97a5e;
+      --cream: #FAF8F5;
+      --gray-100: #F2F0ED;
+      --gray-300: #D1CBC3;
+      --gray-500: #8A8279;
+      --gray-700: #4A4540;
+      --navy-light: #1a2540;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--navy);
+      color: var(--cream);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── NAV ─────────────────────────────────────── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 48px;
+    }
+    .nav-logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.25rem;
+      color: var(--cream);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .nav-logo span { color: var(--terracotta); }
+    .nav-cta {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--gray-300);
+      text-decoration: none;
+      border: 1px solid var(--gray-700);
+      padding: 8px 20px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .nav-cta:hover { border-color: var(--terracotta); color: var(--terracotta); }
+
+    /* ─── HERO ──────────────────────────────────────── */
+    .hero {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px 80px;
+    }
+
+    .hero-inner {
+      max-width: 680px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .hero-eyebrow {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--terracotta);
+      background: rgba(196, 93, 62, 0.12);
+      border: 1px solid rgba(196, 93, 62, 0.3);
+      padding: 6px 16px;
+      border-radius: 100px;
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 20px;
+      color: var(--cream);
+    }
+    h1 em { font-style: normal; color: var(--terracotta); }
+
+    .hero-sub {
+      font-size: 1.1rem;
+      line-height: 1.65;
+      color: var(--gray-300);
+      margin-bottom: 48px;
+      font-weight: 300;
+    }
+
+    /* ─── FORM CARD ────────────────────────────────── */
+    .snapshot-card {
+      background: var(--navy-light);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 40px 44px;
+      text-align: left;
+    }
+
+    .card-headline {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.3rem;
+      margin-bottom: 6px;
+    }
+    .card-sub {
+      font-size: 0.875rem;
+      color: var(--gray-500);
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--gray-300);
+      margin-bottom: 6px;
+      letter-spacing: 0.04em;
+    }
+    .form-input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--gray-700);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      color: var(--cream);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-input::placeholder { color: var(--gray-500); }
+    .form-input:focus { border-color: var(--terracotta); }
+    .form-input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .form-submit {
+      width: 100%;
+      background: var(--terracotta);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 14px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 8px;
+    }
+    .form-submit:hover { background: var(--terracotta-light); }
+    .form-submit:active { transform: scale(0.99); }
+    .form-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .form-footer {
+      margin-top: 16px;
+      font-size: 0.75rem;
+      color: var(--gray-500);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* ─── LOADING STATE ────────────────────────────── */
+    .form-loading {
+      display: none;
+      text-align: center;
+      padding: 20px 0;
+    }
+    .form-loading.visible { display: block; }
+    .form-loading .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid rgba(196,93,62,0.2);
+      border-top-color: var(--terracotta);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    .form-loading p { font-size: 0.9rem; color: var(--gray-300); }
+
+    /* ─── SUCCESS STATE ────────────────────────────── */
+    .form-success {
+      display: none;
+      text-align: center;
+      padding: 16px 0;
+    }
+    .form-success.visible { display: block; }
+    .form-success .check {
+      width: 48px; height: 48px;
+      background: rgba(196,93,62,0.15);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 1.4rem;
+    }
+    .form-success h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.3rem;
+      margin-bottom: 8px;
+    }
+    .form-success p { font-size: 0.9rem; color: var(--gray-300); line-height: 1.55; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── WHAT YOU GET ──────────────────────────────── */
+    .snapshot-card .deliverables {
+      margin-top: 32px;
+      padding-top: 28px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+    .snapshot-card .deliverables p {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray-500);
+      margin-bottom: 14px;
+    }
+    .deliverable-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .deliverable-list li {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.85rem; color: var(--gray-300);
+    }
+    .deliverable-list li::before {
+      content: '✓'; color: var(--terracotta); font-weight: 700; flex-shrink: 0;
+    }
+
+    /* ─── FOOTER ──────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 0.75rem;
+      color: var(--gray-500);
+    }
+
+    @media (max-width: 540px) {
+      nav { padding: 20px 24px; }
+      .hero { padding: 24px 16px 60px; }
+      .snapshot-card { padding: 28px 24px; }
+      .form-input-row { grid-template-columns: 1fr; }
+      .deliverable-list { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="https://madtechgrowth.com" class="nav-logo">MadTech<span>Growth</span></a>
+    <a href="https://madtechgrowth.com" class="nav-cta">← Back to site</a>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-eyebrow">Free AI Visibility Audit</div>
+      <h1>See how <em>AI agents</em> see your brand</h1>
+      <p class="hero-sub">
+        Enter your website. Get a instant GEO snapshot scored across 8 dimensions —
+        with specific gaps ranked by impact. No fluff, just your score and what to fix next.
+      </p>
+
+      <div class="snapshot-card">
+        <!-- ─── Default state: form ─── -->
+        <div id="form-state">
+          <p class="card-headline">Run your free GEO Snapshot</p>
+          <p class="card-sub">Powered by MadTech Growth's 8-pillar GEO assessment. Results delivered to your inbox.</p>
+
+          <form id="snapshot-form" novalidate>
+            <div class="form-input-row">
+              <div class="form-group">
+                <label class="form-label" for="name">First Name</label>
+                <input class="form-input" type="text" id="name" name="name" placeholder="Sarah" autocomplete="given-name" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="email">Work Email</label>
+                <input class="form-input" type="email" id="email" name="email" placeholder="sarah@lawfirm.com" autocomplete="email" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="url">Website URL</label>
+              <input class="form-input" type="url" id="url" name="url" placeholder="https://yourlawfirm.com" required />
+            </div>
+            <button type="submit" class="form-submit" id="submit-btn">Run My GEO Snapshot →</button>
+          </form>
+
+          <p class="form-footer">
+            No spam. No sales pitch. Just your GEO snapshot and a clear next step.<br />
+            Takes about 60 seconds.
+          </p>
+
+          <div class="deliverables">
+            <p>What you'll get in your snapshot</p>
+            <ul class="deliverable-list">
+              <li>Overall GEO readiness score (1–10)</li>
+              <li>Structured data assessment</li>
+              <li>AI bot accessibility check</li>
+              <li>Top 3 gaps ranked by impact</li>
+              <li>Immediate action items</li>
+              <li>Competitive next steps</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- ─── Loading state ─── -->
+        <div id="loading-state" class="form-loading">
+          <div class="spinner"></div>
+          <p>Analyzing your site across 8 GEO dimensions…</p>
+          <p style="margin-top:8px; color: var(--gray-500); font-size: 0.8rem;">This takes about 30 seconds</p>
+        </div>
+
+        <!-- ─── Success state ─── -->
+        <div id="success-state" class="form-success">
+          <div class="check">✓</div>
+          <h3>Your GEO Snapshot is on its way!</h3>
+          <p>Check your inbox — we've sent a full 8-dimension breakdown to <strong id="sent-to"></strong>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    MadTech Growth · Agentic Commerce Advisory · New York, NY
+  </footer>
+
+  <script>
+    const form = document.getElementById('snapshot-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const formState = document.getElementById('form-state');
+    const loadingState = document.getElementById('loading-state');
+    const successState = document.getElementById('success-state');
+    const sentTo = document.getElementById('sent-to');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const url = document.getElementById('url').value.trim();
+
+      // Basic validation
+      if (!name || !email || !url) {
+        alert('Please fill in all fields.');
+        return;
+      }
+      if (!/^https?:\/\/.+\..+/.test(url)) {
+        alert('Please enter a valid URL starting with https://');
+        return;
+      }
+
+      // Switch UI
+      formState.style.display = 'none';
+      loadingState.classList.add('visible');
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch('/.netlify/functions/geo-snapshot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, url }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || 'Something went wrong.');
+        }
+
+        sentTo.textContent = email;
+        loadingState.classList.remove('visible');
+        successState.classList.add('visible');
+      } catch (err) {
+        alert('Error: ' + err.message + '\n\nPlease try again or email us at hello@madtechgrowth.com');
+        formState.style.display = 'block';
+        loadingState.classList.remove('visible');
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

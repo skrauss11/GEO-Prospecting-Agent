@@ -1,0 +1,237 @@
+{
+  "name": "GEO Knowledge Base",
+  "version": "1.0",
+  "last_updated": "2026-04-20",
+  "description": "Generative Engine Optimization research, resources, and insights for MadTech Growth GEO prospecting service.",
+  "statistics": [
+    {"metric": "AI search volume growth (Jul 2024 → Feb 2025)", "stat": "1,200%", "source": "Adobe Analytics"},
+    {"metric": "AI traffic growth YoY during Prime Day", "stat": "3,300%", "source": "Adobe Analytics"},
+    {"metric": "Consumers using LLMs for product research", "stat": "~40%", "source": "Flatline Agency"},
+    {"metric": "Consumers using LLMs regularly", "stat": "72%", "source": "Accenture"},
+    {"metric": "Traditional search volume decline predicted", "stat": "25% by 2026", "source": "Gartner"},
+    {"metric": "ChatGPT weekly active users", "stat": "300M+", "source": "Forbes / OpenAI"},
+    {"metric": "Google AI Overviews monthly users", "stat": "2B+", "source": "Search Engine Land"},
+    {"metric": "AI as top purchase recommendation tool", "stat": "18%", "source": "Accenture"},
+    {"metric": "Reddit citations in AI summaries (3-month growth)", "stat": "450%", "source": "Forbes"},
+    {"metric": "Perplexity monthly queries", "stat": "100M+", "source": "Search Engine Land"},
+    {"metric": "ChatGPT daily queries", "stat": "10M+", "source": "Flatline Agency"},
+    {"metric": "AI citability boost from well-structured content", "stat": "Up to 40%", "source": "Princeton/IIT Delhi Study"}
+  ],
+  "articles": [
+    {
+      "title": "Mastering Generative Engine Optimization in 2026: Full Guide",
+      "source": "Search Engine Land",
+      "url": "https://searchengineland.com/mastering-generative-engine-optimization-in-2026-full-guide-469142",
+      "date": "2026",
+      "key_takeaways": [
+        "GEO ≠ SEO replacement — it's a broadening of strategy",
+        "AI engines favor earned media over brand-owned content (Princeton citation bias study)",
+        "4-phase framework: Assess → Optimize → Measure → Iterate",
+        "Key technical levers: schema markup, robots.txt AI bot access, llms.txt, FAQ sections",
+        "AI citation frequency + sentiment are the primary metrics to track"
+      ]
+    },
+    {
+      "title": "Generative Engine Optimization: The Next Frontier In SEO",
+      "source": "Forbes Agency Council",
+      "url": "https://www.forbes.com/councils/forbesagencycouncil/2025/10/23/generative-engine-optimization-the-next-frontier-in-seo/",
+      "author": "Denis Sinelnikov, CEO Media Components / Curis Digital",
+      "date": "Oct 2025",
+      "key_takeaways": [
+        "GEO can increase AI visibility by up to 40% (Princeton/IIT Delhi study)",
+        "Conversational long-tail queries = GEO's equivalent of keyword targeting",
+        "Schema markup is the #1 technical priority",
+        "Digital PR and thought leadership are direct GEO levers — earned media beats owned content",
+        "GEO isn't about abandoning SEO — it's the new layer on top"
+      ]
+    },
+    {
+      "title": "GEO for Commerce: The Future of AI-Powered eCommerce Discovery",
+      "source": "Flatline Agency",
+      "url": "https://www.flatlineagency.com/blog/geo-for-commerce/",
+      "date": "2025",
+      "key_takeaways": [
+        "SEO = keyword-first; GEO = intent-first",
+        "Product FAQ sections drive AI citations — answer real customer questions",
+        "Schema (Product, Review, FAQ) is non-negotiable for DTC",
+        "Reviews and reputation signals directly affect GEO ranking",
+        "GEO feedback loop is fast — changes visible within days, not months (unlike SEO)"
+      ]
+    },
+    {
+      "title": "Move Over SEO: Why Retailers and Brands Need GEO",
+      "source": "Retail Brew",
+      "url": "https://www.retailbrew.com/stories/2025/07/21/move-over-seo-why-retailers-and-brands-need-to-start-thinking-about-geo",
+      "date": "Jul 2025",
+      "key_takeaways": [
+        "LLMs called 'the new influencers' in retail",
+        "AI engines constantly scrape — feedback loop is fast (unlike SEO months-long cycles)",
+        "Top-of-funnel brand awareness investment grows in importance",
+        "Reputation management and customer lifecycle management grow in importance",
+        "Natural language / conversational content outperforms keyword-focused content"
+      ]
+    },
+    {
+      "title": "$6B GEO Market Explosion 2025",
+      "source": "Geneo",
+      "url": "https://geneo.app/blog/geo-market-ai-search-2025/",
+      "date": "2025",
+      "key_takeaways": [
+        "GEO market projected to reach $6B+",
+        "Refresh content and KPIs regularly as AI search evolves"
+      ]
+    }
+  ],
+  "podcasts": [
+    {
+      "title": "Kitchen Side: Generative Engine Optimization",
+      "platform": "Apple Podcasts",
+      "url": "https://podcasts.apple.com/se/podcast/kitchen-side-generative-engine-optimization/id1547698259?i=1000703733100&l=en-GB",
+      "date": "Apr 2025",
+      "duration": "1 hr",
+      "notes": "Episode 226 — deep dive on GEO fundamentals and practical implementation"
+    },
+    {
+      "title": "FIR Interview: Generative Engine Optimisation with Stephanie Grober",
+      "platform": "FIR Podcast Network",
+      "url": "https://www.firpodcastnetwork.com/fir-interview-generative-engine-optimisation-with-stephanie-grober/",
+      "date": "Sep 2025"
+    },
+    {
+      "title": "SEO + GEO in 2025: The New Lead Gen Formula for Home Service Pros",
+      "platform": "Audible",
+      "url": "https://www.audible.com/podcast/SEO-GEO-in-2025-The-New-Lead-Gen-Formula-for-Home-Service-Pros/B0FRML5QLV",
+      "notes": "Practical GEO/SEO integration for home service businesses"
+    }
+  ],
+  "youtube": [
+    {
+      "title": "Is Generative Engine Optimization the SEO Answer in 2025?",
+      "url": "https://www.youtube.com/watch?v=LrS-15tCCto",
+      "notes": "Debate-format GEO vs SEO discussion"
+    },
+    {
+      "title": "Generative Engine Optimisation (GEO) — GEL Sessions",
+      "url": "https://www.youtube.com/watch?v=eE6AFVjCn4I",
+      "channel": "GEL Studios",
+      "notes": "Beginner-friendly GEO walkthrough"
+    },
+    {
+      "title": "GEO — The Future of SEO in 2025",
+      "url": "https://www.youtube.com/shorts/j1NV-k3t9wM",
+      "platform": "YouTube Shorts",
+      "notes": "Short-form GEO explanation"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "4-Phase GEO Framework",
+      "source": "Search Engine Land",
+      "steps": [
+        "ASSESS — baseline AI search readiness; are AI engines citing you at all?",
+        "OPTIMIZE — structure content, build entity authority, nail technical foundations",
+        "MEASURE — track AI citation frequency, share of voice, sentiment",
+        "ITERATE — scale what earns citations; identify which AI platforms drive most value"
+      ]
+    },
+    {
+      "name": "GEO vs SEO Comparison",
+      "header": ["Aspect", "SEO (Traditional)", "GEO (AI-first)"],
+      "rows": [
+        ["Goal", "Rank #1 in SERPs", "Be cited by AI in 2-7 source answers"],
+        ["Focus", "Keywords + backlinks", "Entities + citations + structured data"],
+        ["Query type", "Short phrases ('best CRM software')", "Conversational ('What CRM for a startup with 10 people?')"],
+        ["Content style", "Keyword-optimized", "Concise, structured, machine-readable FAQ-style"],
+        ["Trust signals", "Backlinks, DA", "E-E-A-T, reviews, earned media"],
+        ["Discovery channel", "Google, Bing", "ChatGPT, SGE, Perplexity, Claude, Copilot"],
+        ["Metrics", "Clicks, rankings, CTR", "AI citation frequency, referral traffic, share of voice"],
+        ["Feedback loop", "Months", "Days to weeks"]
+      ]
+    },
+    {
+      "name": "8 GEO Pillars",
+      "source": "MadTech Growth SOUL.md",
+      "pillars": [
+        "E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness)",
+        "Structured Content",
+        "Schema Markup",
+        "Citation Authority",
+        "Fact Density",
+        "Freshness",
+        "Technical Accessibility",
+        "Brand Reputation"
+      ]
+    }
+  ],
+  "verticals": {
+    "law_firms": {
+      "common_gaps": [
+        "No JSON-LD/Schema.org markup (primary GEO lever for this segment)",
+        "HTTP 403 blocking AI bots (GPTBot, ClaudeBot)",
+        "No FAQ section — LLMs lose Q&A structure",
+        "Missing or incomplete sitemap.xml",
+        "Thin content on homepage"
+      ],
+      "geo_levers": [
+        "FAQ schema + FAQ content sections",
+        "Organization schema, LocalBusiness schema, LegalService schema",
+        "Author bio pages with credentials (E-E-A-T)",
+        "Robot.txt audit to unblock AI crawlers",
+        "Fresh, citation-worthy content (statutes, case references)"
+      ],
+      "notes": "HTTP 403 blocking is very common — dedup strategy needed across runs"
+    },
+    "dtc_ecommerce": {
+      "common_gaps": [
+        "Missing Product schema markup",
+        "No FAQ section on product pages",
+        "Outdated product data / pricing",
+        "Weak review integration",
+        "Conversational content gap — keyword-heavy, not intent-focused"
+      ],
+      "geo_levers": [
+        "Product JSON-LD schema (price, availability, reviews)",
+        "FAQ section on every product page answering real customer questions",
+        "Review schema + photo reviews",
+        "Intent-first content: answer 'what is it for?' not just 'what is it?'",
+        "Connect to Google Merchant Center"
+      ],
+      "notes": "GEO feedback loop is faster in DTC — changes visible within days vs. months in law"
+    }
+  },
+  "tools": [
+    {"name": "Geoptie", "url": "https://geoptie.com", "use": "Free GEO audit + rank tracker across AI engines"},
+    {"name": "Google Rich Results Test", "url": "https://search.google.com/test/rich-results", "use": "Validate schema markup"},
+    {"name": "Schema.org", "url": "https://schema.org", "use": "Reference for markup types"},
+    {"name": "llms.txt", "url": "https://llms.txt", "use": "AI crawler guide file spec"}
+  ],
+  "thought_leaders": [
+    {"name": "Denis Sinelnikov", "title": "CEO, Media Components / Curis Digital", "source": "Forbes Agency Council"},
+    {"name": "Stephanie Grober", "source": "FIR Podcast"},
+    {"name": "Connor Gillivan", "title": "Founder, Metric North", "source": "LinkedIn GEO thought leader"},
+    {"name": "Mark Elkins", "title": "GM Global E-commerce, L'Oreal", "source": "Retail Brew"},
+    {"name": "Natasha Sommerfeld", "title": "Partner, Bain & Company", "source": "Retail Brew"},
+    {"name": "Jill Standish", "title": "Global Retail Lead, Accenture", "source": "Retail Brew"}
+  ],
+  "research_papers": [
+    {
+      "title": "GEO Study: What Ranks Content in AI Answers",
+      "source": "MIT + Columbia / SEO Rank Media",
+      "url": "https://seorankmedia.com/geo-study-ai-rankings/",
+      "key_finding": "Intent, factual density, evidence, and scannable content blocks are what earns AI citations"
+    },
+    {
+      "title": "Citation Bias in AI-Generated Answers",
+      "source": "Princeton University + IIT Delhi",
+      "key_finding": "AI engines strongly favor earned media over brand-owned content"
+    }
+  ],
+  "geo_sales_talking_points": [
+    "Gartner predicts 25% drop in traditional search volume by 2026 — AI is where customers are going",
+    "AI citation frequency is the new ranking — being mentioned in ChatGPT/Perplexity answers is brand visibility",
+    "Structured data (JSON-LD) is the #1 technical gap we see across law firms and DTC brands",
+    "GEO feedback loop is fast — changes in days vs. months for SEO",
+    "GEO is not replacing SEO — it's the new layer on top of it",
+    "The law firm vertical has near-zero structured data implementation — massive opportunity"
+  ]
+}
