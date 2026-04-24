@@ -6,65 +6,105 @@
   <title>Free GEO Snapshot — MadTech Growth</title>
   <meta name="description" content="Get a free AI visibility audit of your website. See how AI agents see your brand — in 60 seconds." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --navy: #0B1120;
-      --terracotta: #C45D3E;
-      --terracotta-light: #d97a5e;
-      --cream: #FAF8F5;
-      --gray-100: #F2F0ED;
-      --gray-300: #D1CBC3;
-      --gray-500: #8A8279;
-      --gray-700: #4A4540;
-      --navy-light: #1a2540;
+      --bg:        #FAF7F2;
+      --bg-soft:   #F3EEE4;
+      --bg-warmer: #EFE7D8;
+      --card:      #FFFDF8;
+      --ink:       #1A1D1E;
+      --ink-soft:  #3B3F42;
+      --muted:     #7A7568;
+      --line:      #E6DFD0;
+      --line-2:    #D9D0BC;
+
+      --sage:          oklch(0.72 0.07 150);
+      --sage-deep:     oklch(0.54 0.10 152);
+      --sage-soft:     oklch(0.93 0.04 148);
+      --clay:          #C45D3E;
+      --clay-deep:     #9C4527;
+      --clay-soft:     oklch(0.93 0.045 45);
+      --lilac:         oklch(0.80 0.05 290);
+      --lilac-soft:    oklch(0.94 0.03 290);
+      --butter:        oklch(0.93 0.08 95);
+
+      --radius-s: 10px;
+      --radius-m: 16px;
+      --radius-l: 24px;
+      --shadow-s: 0 1px 2px rgba(60, 45, 20, 0.04), 0 2px 8px rgba(60, 45, 20, 0.04);
+      --shadow-m: 0 2px 4px rgba(60, 45, 20, 0.05), 0 12px 32px rgba(60, 45, 20, 0.07);
+      --shadow-l: 0 4px 8px rgba(60, 45, 20, 0.06), 0 24px 60px rgba(60, 45, 20, 0.09);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html { scroll-behavior: smooth; }
+
     body {
-      font-family: 'Outfit', sans-serif;
-      background: var(--navy);
-      color: var(--cream);
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      font-weight: 400;
+      line-height: 1.6;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      overflow-x: hidden;
     }
+
+    ::selection { background: var(--butter); color: var(--ink); }
+    p { text-wrap: pretty; }
+    a { color: inherit; }
 
     /* ─── NAV ─────────────────────────────────────── */
     nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 24px 48px;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 1.1rem 2.4rem;
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(250, 247, 242, 0.82);
+      backdrop-filter: saturate(180%) blur(14px);
+      -webkit-backdrop-filter: saturate(180%) blur(14px);
+      border-bottom: 1px solid transparent;
+      transition: border-color .3s, padding .3s, background .3s;
+    }
+    nav.scrolled {
+      padding: 0.7rem 2.4rem;
+      border-bottom-color: var(--line);
+      background: rgba(250, 247, 242, 0.92);
     }
     .nav-logo {
       font-family: 'DM Serif Display', serif;
       font-size: 1.25rem;
-      color: var(--cream);
+      color: var(--ink);
       text-decoration: none;
       letter-spacing: -0.02em;
     }
-    .nav-logo span { color: var(--terracotta); }
+    .nav-logo span { color: var(--sage-deep); }
     .nav-cta {
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: var(--gray-300);
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.58rem 1.1rem;
+      border-radius: 999px;
+      font: 500 0.88rem 'Outfit', sans-serif;
       text-decoration: none;
-      border: 1px solid var(--gray-700);
-      padding: 8px 20px;
-      border-radius: 6px;
-      transition: all 0.2s;
+      white-space: nowrap;
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--line-2);
+      transition: all .25s;
     }
-    .nav-cta:hover { border-color: var(--terracotta); color: var(--terracotta); }
+    .nav-cta:hover { background: var(--card); border-color: var(--ink); transform: translateY(-1px); }
 
-    /* ─── HERO ──────────────────────────────────────── */
+    /* ─── HERO ────────────────────────────────────── */
     .hero {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 40px 24px 80px;
+      padding: 7rem 2.4rem 5rem;
     }
 
     .hero-inner {
@@ -74,185 +114,189 @@
     }
 
     .hero-eyebrow {
-      display: inline-block;
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--terracotta);
-      background: rgba(196, 93, 62, 0.12);
-      border: 1px solid rgba(196, 93, 62, 0.3);
-      padding: 6px 16px;
-      border-radius: 100px;
-      margin-bottom: 28px;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font: 500 0.72rem 'JetBrains Mono', monospace;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--sage-deep);
+      margin-bottom: 1.1rem;
+    }
+    .hero-eyebrow::before {
+      content: ''; width: 22px; height: 1.5px; background: var(--sage);
     }
 
     h1 {
       font-family: 'DM Serif Display', serif;
-      font-size: clamp(2.2rem, 5vw, 3.4rem);
-      line-height: 1.1;
-      letter-spacing: -0.03em;
-      margin-bottom: 20px;
-      color: var(--cream);
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.2rem;
+      color: var(--ink);
     }
-    h1 em { font-style: normal; color: var(--terracotta); }
+    h1 em { font-style: italic; color: var(--sage-deep); }
 
     .hero-sub {
-      font-size: 1.1rem;
-      line-height: 1.65;
-      color: var(--gray-300);
-      margin-bottom: 48px;
+      font-size: 1.12rem;
+      line-height: 1.7;
+      color: var(--ink-soft);
+      margin-bottom: 3rem;
       font-weight: 300;
     }
 
-    /* ─── FORM CARD ────────────────────────────────── */
+    /* ─── FORM CARD ───────────────────────────────── */
     .snapshot-card {
-      background: var(--navy-light);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 40px 44px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-l);
+      padding: 2.5rem 2.8rem;
       text-align: left;
+      box-shadow: var(--shadow-m);
     }
 
     .card-headline {
       font-family: 'DM Serif Display', serif;
-      font-size: 1.3rem;
-      margin-bottom: 6px;
+      font-size: 1.4rem;
+      margin-bottom: 0.4rem;
+      color: var(--ink);
     }
     .card-sub {
-      font-size: 0.875rem;
-      color: var(--gray-500);
-      margin-bottom: 32px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 1.8rem;
       line-height: 1.5;
     }
 
-    .form-group { margin-bottom: 16px; }
+    .form-group { margin-bottom: 1rem; }
     .form-label {
       display: block;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 500;
-      color: var(--gray-300);
-      margin-bottom: 6px;
+      color: var(--ink-soft);
+      margin-bottom: 0.4rem;
       letter-spacing: 0.04em;
     }
     .form-input {
       width: 100%;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--gray-700);
-      border-radius: 8px;
-      padding: 12px 16px;
+      background: var(--bg);
+      border: 1px solid var(--line-2);
+      border-radius: var(--radius-s);
+      padding: 0.75rem 1rem;
       font-family: 'Outfit', sans-serif;
       font-size: 0.95rem;
-      color: var(--cream);
+      color: var(--ink);
       outline: none;
       transition: border-color 0.2s;
     }
-    .form-input::placeholder { color: var(--gray-500); }
-    .form-input:focus { border-color: var(--terracotta); }
-    .form-input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-input::placeholder { color: var(--muted); }
+    .form-input:focus { border-color: var(--clay); }
+    .form-input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 
     .form-submit {
       width: 100%;
-      background: var(--terracotta);
-      color: white;
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      background: var(--ink);
+      color: var(--bg);
       border: none;
-      border-radius: 8px;
-      padding: 14px;
-      font-family: 'Outfit', sans-serif;
-      font-size: 1rem;
-      font-weight: 600;
+      border-radius: 999px;
+      padding: 0.85rem 1.5rem;
+      font: 600 0.95rem 'Outfit', sans-serif;
       cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      margin-top: 8px;
+      transition: all .25s;
+      margin-top: 0.5rem;
+      white-space: nowrap;
     }
-    .form-submit:hover { background: var(--terracotta-light); }
+    .form-submit:hover {
+      background: var(--sage-deep);
+      box-shadow: 0 10px 24px rgba(0,0,0,.12);
+      transform: translateY(-1px);
+    }
     .form-submit:active { transform: scale(0.99); }
-    .form-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .form-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
 
     .form-footer {
-      margin-top: 16px;
+      margin-top: 1rem;
       font-size: 0.75rem;
-      color: var(--gray-500);
+      color: var(--muted);
       text-align: center;
       line-height: 1.5;
     }
 
-    /* ─── LOADING STATE ────────────────────────────── */
+    /* ─── LOADING STATE ───────────────────────────── */
     .form-loading {
       display: none;
       text-align: center;
-      padding: 20px 0;
+      padding: 1.5rem 0;
     }
     .form-loading.visible { display: block; }
     .form-loading .spinner {
       width: 32px; height: 32px;
       border: 3px solid rgba(196,93,62,0.2);
-      border-top-color: var(--terracotta);
+      border-top-color: var(--clay);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
-      margin: 0 auto 16px;
+      margin: 0 auto 1rem;
     }
-    .form-loading p { font-size: 0.9rem; color: var(--gray-300); }
+    .form-loading p { font-size: 0.95rem; color: var(--ink-soft); }
+    .form-loading .muted { margin-top: 0.5rem; color: var(--muted); font-size: 0.8rem; }
 
-    /* ─── SUCCESS STATE ────────────────────────────── */
+    /* ─── SUCCESS STATE ───────────────────────────── */
     .form-success {
       display: none;
       text-align: center;
-      padding: 16px 0;
+      padding: 1rem 0;
     }
     .form-success.visible { display: block; }
     .form-success .check {
       width: 48px; height: 48px;
-      background: rgba(196,93,62,0.15);
+      background: var(--sage-soft);
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 16px;
+      margin: 0 auto 1rem;
       font-size: 1.4rem;
+      color: var(--sage-deep);
     }
     .form-success h3 {
       font-family: 'DM Serif Display', serif;
-      font-size: 1.3rem;
-      margin-bottom: 8px;
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+      color: var(--ink);
     }
-    .form-success p { font-size: 0.9rem; color: var(--gray-300); line-height: 1.55; }
+    .form-success p { font-size: 0.95rem; color: var(--ink-soft); line-height: 1.6; }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ─── WHAT YOU GET ──────────────────────────────── */
+    /* ─── WHAT YOU GET ────────────────────────────── */
     .snapshot-card .deliverables {
-      margin-top: 32px;
-      padding-top: 28px;
-      border-top: 1px solid rgba(255,255,255,0.07);
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--line);
     }
     .snapshot-card .deliverables p {
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--gray-500);
-      margin-bottom: 14px;
+      font: 500 0.72rem 'JetBrains Mono', monospace;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
     }
-    .deliverable-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .deliverable-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
     .deliverable-list li {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 0.85rem; color: var(--gray-300);
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.88rem; color: var(--ink-soft);
     }
     .deliverable-list li::before {
-      content: '✓'; color: var(--terracotta); font-weight: 700; flex-shrink: 0;
+      content: '✓'; color: var(--sage-deep); font-weight: 700; flex-shrink: 0;
     }
 
     /* ─── FOOTER ──────────────────────────────────── */
     footer {
       text-align: center;
-      padding: 24px;
-      font-size: 0.75rem;
-      color: var(--gray-500);
+      padding: 1.5rem 2.4rem;
+      font-size: 0.8rem;
+      color: var(--muted);
     }
 
     @media (max-width: 540px) {
-      nav { padding: 20px 24px; }
-      .hero { padding: 24px 16px 60px; }
-      .snapshot-card { padding: 28px 24px; }
+      nav { padding: 0.9rem 1.2rem; }
+      .hero { padding: 5.5rem 1.2rem 3rem; }
+      .snapshot-card { padding: 1.8rem 1.4rem; border-radius: var(--radius-m); }
       .form-input-row { grid-template-columns: 1fr; }
       .deliverable-list { grid-template-columns: 1fr; }
     }
@@ -260,7 +304,7 @@
 </head>
 <body>
 
-  <nav>
+  <nav id="site-nav">
     <a href="https://madtechgrowth.com" class="nav-logo">MadTech<span>Growth</span></a>
     <a href="https://madtechgrowth.com" class="nav-cta">← Back to site</a>
   </nav>
@@ -270,7 +314,7 @@
       <div class="hero-eyebrow">Free AI Visibility Audit</div>
       <h1>See how <em>AI agents</em> see your brand</h1>
       <p class="hero-sub">
-        Enter your website. Get a instant GEO snapshot scored across 8 dimensions —
+        Enter your website. Get an instant GEO snapshot scored across 8 dimensions —
         with specific gaps ranked by impact. No fluff, just your score and what to fix next.
       </p>
 
@@ -320,7 +364,7 @@
         <div id="loading-state" class="form-loading">
           <div class="spinner"></div>
           <p>Analyzing your site across 8 GEO dimensions…</p>
-          <p style="margin-top:8px; color: var(--gray-500); font-size: 0.8rem;">This takes about 30 seconds</p>
+          <p class="muted">This takes about 30 seconds</p>
         </div>
 
         <!-- ─── Success state ─── -->
@@ -338,6 +382,11 @@
   </footer>
 
   <script>
+    const nav = document.getElementById('site-nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 10);
+    });
+
     const form = document.getElementById('snapshot-form');
     const submitBtn = document.getElementById('submit-btn');
     const formState = document.getElementById('form-state');
@@ -352,7 +401,6 @@
       const email = document.getElementById('email').value.trim();
       const url = document.getElementById('url').value.trim();
 
-      // Basic validation
       if (!name || !email || !url) {
         alert('Please fill in all fields.');
         return;
@@ -362,7 +410,6 @@
         return;
       }
 
-      // Switch UI
       formState.style.display = 'none';
       loadingState.classList.add('visible');
       submitBtn.disabled = true;
