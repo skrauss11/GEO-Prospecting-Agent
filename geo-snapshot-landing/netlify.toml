@@ -4,4 +4,3 @@
 
 [functions]
   directory = "netlify/functions"
-  node_bundler = "none"  # Python functions don't need node bundling
