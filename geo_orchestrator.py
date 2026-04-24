@@ -26,7 +26,7 @@ import os
 import sys
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from dotenv import load_dotenv
 
@@ -45,10 +45,11 @@ from shared.output import DiscordFormatter, CRMFormatter
 from shared.airtable import export_prospects_to_airtable
 from shared.snapshot_pdf import generate_snapshot_pdf
 from geo_scanner import scan_site_sync
+from shared.benchmarks import update_distribution
 
 # Configuration
 NOUS_API_KEY = os.environ.get("NOUS_API_KEY", "")
-NOUS_BASE_URL = os.environ.get("NOUS_BASE_URL", "https://gateway.nous.uno/v1")
+NOUS_BASE_URL = os.environ.get("NOUS_BASE_URL", "https://inference-api.nousresearch.com/v1")
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", "")
 
 # History file (shared across all verticals)
@@ -78,7 +79,7 @@ def run_discovery(
     vertical: BaseVertical,
     history: UnifiedHistory,
     test_mode: bool = False,
-    count: int = 5,
+    count: int = 3,
 ) -> tuple[str, list[Prospect]]:
     """
     Run discovery for a single vertical.
@@ -130,6 +131,7 @@ def run_all_verticals(
     history: UnifiedHistory,
     test_mode: bool = False,
     crm_mode: bool = False,
+    count: int = 3,
 ) -> dict[str, Any]:
     """Run discovery for all enabled verticals and combine results."""
     all_prospects: list[Prospect] = []
@@ -142,7 +144,7 @@ def run_all_verticals(
             vertical=vertical,
             history=history,
             test_mode=test_mode,
-            count=5,
+            count=count,
         )
         reports[vertical.key] = report
         all_prospects.extend(prospects)
@@ -205,9 +207,90 @@ def send_to_discord(report: str, test_mode: bool = False) -> bool:
         return False
 
 
+def process_top_leads(prospects: list[Prospect], top_n: int = 2,
+                      competitor_urls: Optional[list[str]] = None) -> tuple[list[Path], str]:
+    """
+    Sort prospects by normalized score (descending), take top N,
+    scan each with geo_scanner, optionally scan competitors,
+    and generate branded PDF snapshots.
+
+    Returns:
+        (pdf_paths, markdown_summary) for Discord/reporting
+    """
+    if not prospects:
+        return [], ""
+
+    # Sort by normalized score descending, break ties by raw score
+    ranked = sorted(prospects, key=lambda p: (p.normalized_score, p.raw_score), reverse=True)
+    top = ranked[:top_n]
+
+    print(f"\n📊 Ranked {len(prospects)} prospects — scanning top {len(top)} for PDF snapshots...", flush=True)
+
+    pdf_paths: list[Path] = []
+    summary_lines: list[str] = [
+        "",
+        f"📎 **Top {len(top)} Lead Snapshots (Ranked by GEO Score):**",
+    ]
+
+    # Scan competitors if provided
+    competitor_results: list[dict] = []
+    if competitor_urls:
+        print(f"\n  🔍 Scanning {len(competitor_urls)} competitor(s)...", flush=True)
+        for cu in competitor_urls[:3]:
+            try:
+                c_res = scan_site_sync(cu)
+                if not c_res.get("error"):
+                    competitor_results.append(c_res)
+                    print(f"    ✓ Competitor scan: {cu} — {c_res.get('overall_score', 0):.1f}/10", flush=True)
+            except Exception as e:
+                print(f"    ✗ Competitor scan failed for {cu}: {e}", flush=True)
+
+    for i, prospect in enumerate(top, 1):
+        try:
+            print(f"  [{i}/{len(top)}] Scanning {prospect.url} (score: {prospect.normalized_score:.2f})...", flush=True)
+            scan_result = scan_site_sync(prospect.url)
+            if scan_result.get("error"):
+                print(f"    ⚠️ Scan error: {scan_result['error']}", flush=True)
+                summary_lines.append(f"• **{prospect.name}** — scan failed ({scan_result['error']})")
+                continue
+
+            # Inject company name + vertical from prospect into scan result for PDF
+            scan_result["company"] = prospect.name or scan_result.get("company", "")
+            scan_result["vertical"] = prospect.vertical or "default"
+
+            # Update benchmark distribution
+            try:
+                update_distribution(scan_result.get("vertical", "default"),
+                                   scan_result.get("overall_score", 0))
+            except Exception:
+                pass
+
+            pdf_path = generate_snapshot_pdf(scan_result, SNAPSHOTS_DIR,
+                                             competitors=competitor_results or None)
+            pdf_paths.append(pdf_path)
+
+            score_str = scan_result.get("overall_score", "N/A")
+            grade_str = scan_result.get("grade", "N/A")
+            print(f"    ✓ PDF saved: {pdf_path} (GEO: {score_str}/10, Grade {grade_str})", flush=True)
+
+            comp_note = ""
+            if competitor_results:
+                comp_note = f" (vs {len(competitor_results)} competitor(s))"
+            summary_lines.append(
+                f"• **#{i} {prospect.name}** — GEO {score_str}/10 (Grade {grade_str}){comp_note}\n"
+                f"  └─ PDF: `{pdf_path.name}`"
+            )
+        except Exception as e:
+            print(f"    ✗ Failed to generate snapshot for {prospect.url}: {e}", flush=True)
+            summary_lines.append(f"• **{prospect.name}** — PDF generation failed ({e})")
+
+    print(f"\n✓ Generated {len(pdf_paths)} PDF snapshot(s) in {SNAPSHOTS_DIR}/", flush=True)
+    return pdf_paths, "\n".join(summary_lines)
+
+
 def process_hot_leads(prospects: list[Prospect]) -> list[Path]:
     """
-    Scan hot prospects with geo_scanner and generate PDF snapshots.
+    Legacy: scan hot prospects (score >= 0.8) with geo_scanner and generate PDF snapshots.
     Returns list of generated PDF paths.
     """
     hot = [p for p in prospects if p.normalized_score >= 0.8]
@@ -271,8 +354,27 @@ Examples:
     parser.add_argument(
         "--count",
         type=int,
-        default=5,
-        help="Number of prospects to find per vertical (default: 5)",
+        default=3,
+        help="Number of prospects to find per vertical (default: 3)",
+    )
+    parser.add_argument(
+        "--snapshot-top",
+        type=int,
+        default=0,
+        metavar="N",
+        help="After discovery, rank prospects and generate PDF snapshots for the top N (default: 0 = off)",
+    )
+    parser.add_argument(
+        "--snapshot",
+        action="store_true",
+        help="Shorthand for --snapshot-top 2",
+    )
+    parser.add_argument(
+        "--competitors",
+        nargs="+",
+        default=None,
+        metavar="URL",
+        help="1-3 competitor URLs to benchmark against in snapshots (e.g. --competitors https://rival1.com https://rival2.com)",
     )
     parser.add_argument(
         "--list",
@@ -281,6 +383,10 @@ Examples:
     )
     
     args = parser.parse_args()
+    
+    # Resolve --snapshot shorthand
+    if args.snapshot and args.snapshot_top == 0:
+        args.snapshot_top = 2
     
     if args.list:
         print("Available verticals:")
@@ -296,6 +402,10 @@ Examples:
     print("=" * 60, flush=True)
     print("GEO Multi-Vertical Discovery Orchestrator", flush=True)
     print(f"Date: {date.today().strftime('%B %d, %Y')}", flush=True)
+    if args.snapshot_top > 0:
+        print(f"Mode: Discover → Rank → Snapshot Top {args.snapshot_top}", flush=True)
+        if args.competitors:
+            print(f"Competitors: {', '.join(args.competitors)}", flush=True)
     print("=" * 60, flush=True)
     
     # Run discovery
@@ -304,6 +414,7 @@ Examples:
             history=history,
             test_mode=args.test,
             crm_mode=args.crm,
+            count=args.count,
         )
         report = result["discord_report"]
     else:
@@ -335,11 +446,21 @@ Examples:
     else:
         all_prospects = prospects if 'prospects' in locals() else []
     
-    # Process hot leads: full scan + PDF snapshot
-    if not args.test and all_prospects:
+    # Snapshot mode: rank all prospects, take top N, scan + PDF
+    if not args.test and args.snapshot_top > 0 and all_prospects:
+        pdf_paths, snapshot_summary = process_top_leads(
+            all_prospects, top_n=args.snapshot_top,
+            competitor_urls=args.competitors
+        )
+        if snapshot_summary:
+            # Append snapshot summary to Discord report
+            report += "\n" + snapshot_summary
+            report += f"\n_Stored locally in: `{SNAPSHOTS_DIR}`_"
+    
+    # Legacy hot-lead processing (only when snapshot mode is OFF)
+    elif not args.test and all_prospects:
         pdf_paths = process_hot_leads(all_prospects)
         if pdf_paths:
-            # Append snapshot notice to Discord report
             snapshot_lines = [
                 "",
                 "📎 **Hot Lead Snapshots Generated:**",
@@ -348,8 +469,8 @@ Examples:
             ]
             report += "\n".join(snapshot_lines)
     
-    # Export to Airtable (always in live mode)
-    if not args.test and all_prospects:
+    # Export to Airtable (only when --airtable flag is passed)
+    if args.airtable and not args.test and all_prospects:
         crm_data = CRMFormatter.format_prospects(all_prospects)
         export_prospects_to_airtable(crm_data['prospects'])
     

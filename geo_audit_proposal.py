@@ -25,6 +25,8 @@ from pathlib import Path
 from typing import List, Optional
 from urllib.parse import urlparse
 
+from geo_scanner import scan_site_sync
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -33,14 +35,20 @@ DEFAULT_INPUT = Path(__file__).parent / "geoscore_results.json"
 OUTPUT_DIR = Path(__file__).parent / "proposals"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-# Brand colors
-NAVY = "#0B1120"
-TERRACOTTA = "#C45D3E"
-CREAM = "#FAF8F5"
-GRAY_300 = "#D1CBC3"
-GRAY_500 = "#8A8279"
-GRAY_700 = "#4A4540"
-NAVY_LIGHT = "#1a2540"
+# Brand colors — Design v2 (light editorial)
+CREAM = "#FAF7F2"          # warm cream page background
+CREAM_SOFT = "#F3EEE4"     # section surfaces
+CARD = "#FFFDF8"           # cards
+LINE = "#E6DFD0"           # subtle divider
+LINE_2 = "#D9D0BC"         # stronger divider
+INK = "#1A1D1E"            # primary text
+INK_SOFT = "#3B3F42"       # body copy
+MUTED = "#7A7568"          # captions, meta
+SAGE = "#7A9B76"           # primary accent (~oklch)
+SAGE_DEEP = "#4A6B46"      # emphasis, links
+CLAY = "#C45D3E"           # secondary accent (terracotta)
+CLAY_DEEP = "#9C4527"
+NAVY_LIGHT = "#F3EEE4"     # score hero / CTA bg (reused cream-soft)
 
 # Gap → (effort_hours, impact, priority)
 # effort: Small (4-8h), Medium (1-2d), Large (3-5d)
@@ -83,6 +91,12 @@ DIMENSION_LABELS = {
 def extract_domain(url: str) -> str:
     parsed = urlparse(url)
     return parsed.netloc.replace("www.", "").replace(".", "_")
+
+
+def _domain_key(url: str) -> str:
+    """Domain key for lookups (matches geo_competitor_scanner.extract_domain)."""
+    parsed = urlparse(url)
+    return parsed.netloc.replace("www.", "")
 
 def score_color(score: float) -> str:
     if score >= 8:
@@ -140,7 +154,7 @@ def grade_readiness_text(grade: str) -> str:
 # HTML Builder
 # ---------------------------------------------------------------------------
 
-def build_html(result: dict, competitors: Optional[List[str]] = None) -> str:
+def build_html(result: dict, comparison_data: Optional[dict] = None) -> str:
     url = result["url"]
     company = result.get("company") or extract_domain(url)
     overall = result["overall_score"]
@@ -187,7 +201,7 @@ def build_html(result: dict, competitors: Optional[List[str]] = None) -> str:
     for i, (gap, rec) in enumerate(zip(gaps, recs), 1):
         effort, impact, priority = parse_gap_effort(gap)
         effort_color = "#22c55e" if effort == "Small" else "#eab308" if effort == "Medium" else "#f97316"
-        impact_color = "#22c55e" if impact == "High" else "#eab308" if impact == "Medium" else "#8A8279"
+        impact_color = "#22c55e" if impact == "High" else "#eab308" if impact == "Medium" else MUTED
         gap_rows += f"""
         <tr>
             <td class="td-priority">{priority}</td>
@@ -200,18 +214,76 @@ def build_html(result: dict, competitors: Optional[List[str]] = None) -> str:
 
     # --- Competitor section ---
     comp_section = ""
-    if competitors:
-        comp_list = "".join(f"<li>{c}</li>" for c in competitors)
+    if comparison_data:
+        target_info = comparison_data["target"]
+        comps = comparison_data["competitors"]
+        rank = comparison_data.get("target_rank")
+        total = 1 + len(comps)
+        dims = comparison_data.get("dimension_comparison", {})
+
+        # Build comparison table rows
+        dim_rows = ""
+        for dim_key, label in DIMENSION_LABELS.items():
+            if dim_key not in dims:
+                continue
+            scores_map = dims[dim_key]["scores"]
+            target_score = scores_map.get(_domain_key(target_info["url"]), "—")
+            comp_cells = ""
+            for c in comps:
+                c_score = scores_map.get(_domain_key(c["url"]), "—")
+                comp_cells += f'<td class="td-score">{c_score}</td>'
+            dim_rows += f"""
+            <tr>
+                <td class="td-dim">{label}</td>
+                <td class="td-score" style="font-weight:600;color:{score_color(target_score) if isinstance(target_score, (int, float)) else MUTED};">{target_score}</td>
+                {comp_cells}
+            </tr>
+            """
+
+        # Overall row
+        overall_cells = ""
+        for c in comps:
+            c_score = c.get("overall_score", "—")
+            c_color = score_color(c_score) if isinstance(c_score, (int, float)) else MUTED
+            overall_cells += f'<td class="td-score" style="font-weight:600;color:{c_color};">{c_score}</td>'
+
+        rank_text = f"Your site ranks <strong>#{rank} of {total}</strong> in overall GEO readiness." if rank else ""
+        trailing = comparison_data.get("trailing_gaps", [])
+        trailing_html = ""
+        if trailing:
+            trailing_html = '<div style="margin-top:16px;"><p style="font-size:0.85rem;color:var(--clay);font-weight:600;margin-bottom:8px;">Dimensions where you trail competitors:</p><ul style="font-size:0.85rem;color:var(--ink-soft);margin:0;padding-left:18px;">'
+            for gap in trailing:
+                trailing_html += f"<li>{gap}</li>"
+            trailing_html += "</ul></div>"
+
+        comp_header_cols = "".join(f'<th class="th-comp">{extract_domain(c["url"]).replace("_", ".")[:20]}</th>' for c in comps)
+
         comp_section = f"""
         <div class="section">
             <h2 class="section-title">Competitor Benchmark</h2>
-            <p class="section-sub">We will analyze {len(competitors)} competitor site(s) and provide a side-by-side comparison:</p>
-            <ul class="comp-list">{comp_list}</ul>
-            <p class="section-sub">Included in your Growth Retainer engagement.</p>
+            <p class="section-sub">{rank_text} Side-by-side comparison across {len(DIMENSION_LABELS)} GEO dimensions:</p>
+            <table class="gap-table" style="margin-bottom:16px;">
+                <thead>
+                    <tr>
+                        <th class="th-dim">Dimension</th>
+                        <th class="th-comp">You</th>
+                        {comp_header_cols}
+                    </tr>
+                </thead>
+                <tbody>
+                    {dim_rows}
+                    <tr style="border-top:2px solid rgba(0,0,0,0.1);">
+                        <td class="td-dim" style="font-weight:600;">Overall</td>
+                        <td class="td-score" style="font-weight:700;color:{score_color(overall) if overall else MUTED};">{overall if overall else "—"}</td>
+                        {overall_cells}
+                    </tr>
+                </tbody>
+            </table>
+            {trailing_html}
         </div>
         """
 
-    grade_c = score_color(overall) if overall else GRAY_500
+    grade_c = score_color(overall) if overall else MUTED
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -223,19 +295,25 @@ def build_html(result: dict, competitors: Optional[List[str]] = None) -> str:
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <style>
 :root {{
-  --navy: {NAVY};
-  --terracotta: {TERRACOTTA};
   --cream: {CREAM};
-  --gray-300: {GRAY_300};
-  --gray-500: {GRAY_500};
-  --gray-700: {GRAY_700};
+  --cream-soft: {CREAM_SOFT};
+  --card: {CARD};
+  --line: {LINE};
+  --line-2: {LINE_2};
+  --ink: {INK};
+  --ink-soft: {INK_SOFT};
+  --muted: {MUTED};
+  --sage: {SAGE};
+  --sage-deep: {SAGE_DEEP};
+  --clay: {CLAY};
+  --clay-deep: {CLAY_DEEP};
   --navy-light: {NAVY_LIGHT};
 }}
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
 body {{
   font-family: 'Outfit', sans-serif;
-  background: var(--navy);
-  color: var(--cream);
+  background: var(--cream);
+  color: var(--ink);
   line-height: 1.6;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
@@ -250,7 +328,7 @@ body {{
 .header {{
   text-align: center;
   padding-bottom: 48px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
   margin-bottom: 48px;
 }}
 .eyebrow {{
@@ -258,19 +336,19 @@ body {{
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--terracotta);
+  color: var(--sage-deep);
   margin-bottom: 12px;
 }}
 .header h1 {{
   font-family: 'DM Serif Display', serif;
   font-size: 2.5rem;
   font-weight: 400;
-  color: var(--cream);
+  color: var(--ink);
   margin-bottom: 8px;
 }}
 .header-meta {{
   font-size: 0.9rem;
-  color: var(--gray-500);
+  color: var(--muted);
 }}
 
 /* Score Hero */
@@ -297,7 +375,7 @@ body {{
 }}
 .score-label {{
   font-size: 0.85rem;
-  color: var(--gray-500);
+  color: var(--muted);
   margin-top: 4px;
 }}
 .score-grade {{
@@ -319,7 +397,7 @@ body {{
 }}
 .score-readiness p {{
   font-size: 0.9rem;
-  color: var(--gray-500);
+  color: var(--muted);
   line-height: 1.6;
 }}
 
@@ -332,10 +410,11 @@ body {{
   font-size: 1.5rem;
   font-weight: 400;
   margin-bottom: 8px;
+  color: var(--ink);
 }}
 .section-sub {{
   font-size: 0.9rem;
-  color: var(--gray-500);
+  color: var(--muted);
   margin-bottom: 24px;
 }}
 
@@ -346,11 +425,11 @@ body {{
   justify-content: space-between;
   gap: 20px;
   padding: 16px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(0,0,0,0.04);
 }}
 .dim-info {{ flex: 1; min-width: 200px; }}
-.dim-name {{ font-size: 0.95rem; font-weight: 500; }}
-.dim-detail {{ font-size: 0.8rem; color: var(--gray-500); margin-top: 2px; }}
+.dim-name {{ font-size: 0.95rem; font-weight: 500; color: var(--ink); }}
+.dim-detail {{ font-size: 0.8rem; color: var(--muted); margin-top: 2px; }}
 .dim-score-area {{
   display: flex;
   align-items: center;
@@ -360,7 +439,7 @@ body {{
 .dim-bar-wrap {{
   flex: 1;
   height: 8px;
-  background: rgba(255,255,255,0.06);
+  background: rgba(0,0,0,0.06);
   border-radius: 4px;
   overflow: hidden;
   min-width: 100px;
@@ -390,21 +469,21 @@ body {{
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--gray-500);
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  color: var(--muted);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
 }}
 .gap-table td {{
   padding: 14px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(0,0,0,0.04);
   vertical-align: top;
 }}
 .td-priority {{
   font-weight: 700;
-  color: var(--terracotta);
+  color: var(--clay);
   width: 60px;
 }}
-.td-gap {{ color: var(--cream); max-width: 220px; }}
-.td-rec {{ color: var(--gray-300); max-width: 280px; }}
+.td-gap {{ color: var(--ink); max-width: 220px; }}
+.td-rec {{ color: var(--ink-soft); max-width: 280px; }}
 .td-effort, .td-impact {{ width: 90px; }}
 .badge {{
   display: inline-block;
@@ -414,6 +493,12 @@ body {{
   font-weight: 600;
   white-space: nowrap;
 }}
+
+/* Competitor comparison table */
+.th-dim {{ width: 180px; }}
+.th-comp {{ width: 100px; text-align: center; }}
+.td-dim {{ font-size: 0.85rem; color: var(--ink); }}
+.td-score {{ font-size: 0.85rem; text-align: center; width: 100px; }}
 
 /* CTA */
 .cta-box {{
@@ -428,10 +513,11 @@ body {{
   font-size: 1.75rem;
   font-weight: 400;
   margin-bottom: 12px;
+  color: var(--ink);
 }}
 .cta-box p {{
   font-size: 0.95rem;
-  color: var(--gray-500);
+  color: var(--muted);
   max-width: 500px;
   margin: 0 auto 24px;
   line-height: 1.6;
@@ -447,24 +533,24 @@ body {{
   text-align: center;
   padding: 20px 28px;
   border-radius: 12px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--card);
+  border: 1px solid var(--line);
   min-width: 160px;
 }}
 .price-card .price {{
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--terracotta);
+  color: var(--clay);
 }}
 .price-card .label {{
   font-size: 0.75rem;
-  color: var(--gray-500);
+  color: var(--muted);
   margin-top: 4px;
 }}
 .cta-btn {{
   display: inline-block;
-  background: var(--terracotta);
-  color: var(--cream);
+  background: var(--clay);
+  color: #FFF;
   text-decoration: none;
   font-size: 1rem;
   font-weight: 600;
@@ -477,12 +563,12 @@ body {{
 .footer {{
   text-align: center;
   padding-top: 48px;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid rgba(0,0,0,0.06);
   margin-top: 48px;
 }}
 .footer p {{
   font-size: 0.8rem;
-  color: var(--gray-700);
+  color: var(--muted);
   margin-bottom: 4px;
 }}
 
@@ -500,13 +586,13 @@ body {{
 }}
 .comp-list li {{
   padding: 8px 0;
-  color: var(--gray-300);
+  color: var(--ink-soft);
   font-size: 0.9rem;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(0,0,0,0.04);
 }}
 .comp-list li::before {{
   content: "→";
-  color: var(--terracotta);
+  color: var(--sage-deep);
   margin-right: 10px;
 }}
 </style>
@@ -559,7 +645,7 @@ body {{
         </tr>
       </thead>
       <tbody>
-        {gap_rows if gap_rows else '<tr><td colspan="5" style="text-align:center;color:' + GRAY_500 + ';">No gaps detected — excellent GEO health.</td></tr>'}
+        {gap_rows if gap_rows else '<tr><td colspan="5" style="text-align:center;color:' + MUTED + ';">No gaps detected — excellent GEO health.</td></tr>'}
       </tbody>
     </table>
   </div>
@@ -639,15 +725,28 @@ def main():
                         help="Path to geo_scanner JSON output")
     parser.add_argument("--url", type=str, help="Target URL to generate proposal for")
     parser.add_argument("--index", type=int, help="Result index (0-based, scored only)")
-    parser.add_argument("--competitors", nargs="+", help="Competitor URLs for benchmark section")
+    parser.add_argument("--competitors", nargs="+", help="Competitor URLs to scan and benchmark")
     parser.add_argument("--output", type=str, help="Custom output path (optional)")
     args = parser.parse_args()
 
     results = load_results(Path(args.input))
     result = find_result(results, args.url, args.index)
 
+    # Build competitor comparison if URLs provided
+    comparison_data = None
+    if args.competitors:
+        print(f"\n🔍 Scanning {len(args.competitors)} competitor(s)...")
+        from geo_competitor_scanner import run_scan, build_comparison
+        target_scan = result  # Use existing scanner result for target
+        # Ensure target has full dimension data; if not, rescan
+        if not target_scan.get("dimensions"):
+            target_scan = run_scan(result["url"])
+        comp_scans = [run_scan(url) for url in args.competitors]
+        comparison_data = build_comparison(target_scan, comp_scans)
+        print(f"   Target rank: #{comparison_data['target_rank']} of {1 + len(args.competitors)}")
+
     domain = extract_domain(result["url"])
-    html = build_html(result, competitors=args.competitors)
+    html = build_html(result, comparison_data=comparison_data)
 
     if args.output:
         out_path = Path(args.output)
@@ -662,8 +761,10 @@ def main():
     print(f"   URL: {result['url']}")
     print(f"   Score: {result.get('overall_score', '—')}/10 (Grade {result.get('grade', '?')})")
     print(f"   Gaps: {len(result.get('gaps', []))}")
-    if args.competitors:
-        print(f"   Competitors: {len(args.competitors)}")
+    if comparison_data:
+        print(f"   Competitors: {len(args.competitors)} (rank #{comparison_data['target_rank']})")
+    elif args.competitors:
+        print(f"   Competitors: {len(args.competitors)} (placeholder — run with scanner data for live comparison)")
 
 
 if __name__ == "__main__":
