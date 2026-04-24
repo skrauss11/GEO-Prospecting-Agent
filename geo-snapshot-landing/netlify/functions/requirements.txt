@@ -1,2 +1,0 @@
-# Python dependencies for geo-snapshot Netlify Function
-# smtplib and built-in modules only — no external packages required
