@@ -399,14 +399,22 @@
 
       const name = document.getElementById('name').value.trim();
       const email = document.getElementById('email').value.trim();
-      const url = document.getElementById('url').value.trim();
+      let url = document.getElementById('url').value.trim();
 
       if (!name || !email || !url) {
         alert('Please fill in all fields.');
         return;
       }
-      if (!/^https?:\/\/.+\..+/.test(url)) {
-        alert('Please enter a valid URL starting with https://');
+
+      // Auto-prepend https:// if user omitted protocol
+      if (!/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+      }
+
+      try {
+        new URL(url);
+      } catch {
+        alert('Please enter a valid website URL (e.g., https://yourfirm.com)');
         return;
       }
 
