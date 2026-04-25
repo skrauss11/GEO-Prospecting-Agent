@@ -27,6 +27,7 @@ def score_badge(score: float) -> str:
 
 def write_daily_report(
     prospects: list["Prospect"],
+    md_paths: Optional[list[Path]] = None,
     pdf_paths: Optional[list[Path]] = None,
     reports_dir: Optional[Path] = None,
 ) -> Path:
@@ -35,6 +36,7 @@ def write_daily_report(
 
     Args:
         prospects: All prospects discovered today
+        md_paths: Optional list of generated markdown snapshot paths
         pdf_paths: Optional list of generated PDF snapshot paths
         reports_dir: Directory to write report (default: project_root/reports)
 
@@ -48,7 +50,13 @@ def write_daily_report(
     today = date.today()
     md_path = reports_dir / f"daily_leads_{today.isoformat()}.md"
 
-    # Build PDF lookup: domain -> path
+    # Build lookup: domain -> {md, pdf}
+    md_by_domain: dict[str, Path] = {}
+    if md_paths:
+        for p in md_paths:
+            domain = p.stem.replace("geo_snapshot_", "").replace(f"_{today.isoformat()}", "")
+            md_by_domain[domain] = p
+
     pdf_by_domain: dict[str, Path] = {}
     if pdf_paths:
         for p in pdf_paths:
@@ -77,6 +85,7 @@ def write_daily_report(
         f"| 🔥 Hot (≥0.8) | {len(hot)} |",
         f"| 🟡 Warm (0.5–0.79) | {len(warm)} |",
         f"| 🔵 Cold (<0.5) | {len(cold)} |",
+        f"| 📄 Snapshots Ready | {len(md_by_domain)} |",
         "",
     ]
 
@@ -86,7 +95,7 @@ def write_daily_report(
             "",
         ])
         for p in hot:
-            lines.extend(_prospect_section(p, pdf_by_domain))
+            lines.extend(_prospect_section(p, md_by_domain, pdf_by_domain))
 
     if warm:
         lines.extend([
@@ -94,7 +103,7 @@ def write_daily_report(
             "",
         ])
         for p in warm:
-            lines.extend(_prospect_section(p, pdf_by_domain))
+            lines.extend(_prospect_section(p, md_by_domain, pdf_by_domain))
 
     if cold:
         lines.extend([
@@ -102,7 +111,7 @@ def write_daily_report(
             "",
         ])
         for p in cold:
-            lines.extend(_prospect_section(p, pdf_by_domain))
+            lines.extend(_prospect_section(p, md_by_domain, pdf_by_domain))
 
     # Master table at the bottom for quick scanning
     lines.extend([
@@ -110,8 +119,8 @@ def write_daily_report(
         "",
         "## Quick Reference Table",
         "",
-        "| Priority | Company | URL | Vertical | Score | Top Gap | PDF? |",
-        "|----------|---------|-----|----------|-------|---------|------|",
+        "| Priority | Company | URL | Vertical | Score | Top Gap | Snapshot? |",
+        "|----------|---------|-----|----------|-------|---------|-----------|",
     ])
     for p in ranked:
         pri_emoji = "🔥" if p.normalized_score >= 0.8 else "🟡" if p.normalized_score >= 0.5 else "🔵"
@@ -121,8 +130,8 @@ def write_daily_report(
         score = f"{p.normalized_score:.2f}"
         top_gap = (p.geo_gaps[0] if p.geo_gaps else "—")[:40]
         domain_key = p.url.replace("https://", "").replace("http://", "").replace("www.", "").split("/")[0].replace(".", "_")
-        has_pdf = "✅" if any(domain_key in str(k) for k in pdf_by_domain.keys()) else "—"
-        lines.append(f"| {pri_emoji} | {name} | [{url_short}]({p.url}) | {vert} | {score} | {top_gap} | {has_pdf} |")
+        has_snapshot = "✅" if any(domain_key in str(k) for k in md_by_domain.keys()) else "—"
+        lines.append(f"| {pri_emoji} | {name} | [{url_short}]({p.url}) | {vert} | {score} | {top_gap} | {has_snapshot} |")
 
     lines.extend([
         "",
@@ -140,9 +149,14 @@ def write_daily_report(
     return md_path
 
 
-def _prospect_section(p: "Prospect", pdf_by_domain: dict[str, Path]) -> list[str]:
+def _prospect_section(p: "Prospect", md_by_domain: dict[str, Path], pdf_by_domain: dict[str, Path]) -> list[str]:
     """Generate a detail section for a single prospect."""
     domain_key = p.url.replace("https://", "").replace("http://", "").replace("www.", "").split("/")[0].replace(".", "_")
+    md_link = ""
+    for k, v in md_by_domain.items():
+        if domain_key in k or k in domain_key:
+            md_link = f"\n  - 📄 [Snapshot MD]({v})"
+            break
     pdf_link = ""
     for k, v in pdf_by_domain.items():
         if domain_key in k or k in domain_key:
@@ -168,6 +182,7 @@ def _prospect_section(p: "Prospect", pdf_by_domain: dict[str, Path]) -> list[str
         f"- **GEO Score:** {p.normalized_score:.2f} / 1.0 (raw: {p.raw_score}/{p.max_score})",
         f"- **Priority:** {'🔥 Hot' if p.normalized_score >= 0.8 else '🟡 Warm' if p.normalized_score >= 0.5 else '🔵 Cold'}",
         f"- **Recommended Action:** {p.recommended_action or '—'}",
+        f"{md_link}",
         f"{pdf_link}",
         "",
         "**Top Gaps:**",

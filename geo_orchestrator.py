@@ -47,6 +47,7 @@ from shared.snapshot_pdf import generate_snapshot_pdf
 from shared.daily_report import write_daily_report
 from geo_scanner import scan_site_sync
 from shared.benchmarks import update_distribution
+from generate_geo_report import build_markdown, extract_domain
 
 # Configuration
 NOUS_API_KEY = os.environ.get("NOUS_API_KEY", "")
@@ -209,29 +210,34 @@ def send_to_discord(report: str, test_mode: bool = False) -> bool:
 
 
 def process_top_leads(prospects: list[Prospect], top_n: int = 2,
-                      competitor_urls: Optional[list[str]] = None) -> tuple[list[Path], str]:
+                      competitor_urls: Optional[list[str]] = None,
+                      generate_pdfs: bool = False) -> tuple[list[Path], list[Path], str]:
     """
     Sort prospects by normalized score (descending), take top N,
-    scan each with geo_scanner, optionally scan competitors,
-    and generate branded PDF snapshots.
+    scan each with geo_scanner, write individual markdown snapshot files
+    to proposals/, and optionally generate PDF snapshots.
 
     Returns:
-        (pdf_paths, markdown_summary) for Discord/reporting
+        (md_paths, pdf_paths, markdown_summary) for Discord/reporting
     """
     if not prospects:
-        return [], ""
+        return [], [], ""
 
     # Sort by normalized score descending, break ties by raw score
     ranked = sorted(prospects, key=lambda p: (p.normalized_score, p.raw_score), reverse=True)
     top = ranked[:top_n]
 
-    print(f"\n📊 Ranked {len(prospects)} prospects — scanning top {len(top)} for PDF snapshots...", flush=True)
+    print(f"\n📊 Ranked {len(prospects)} prospects — scanning top {len(top)} for snapshot reports...", flush=True)
 
+    md_paths: list[Path] = []
     pdf_paths: list[Path] = []
     summary_lines: list[str] = [
         "",
         f"📎 **Top {len(top)} Lead Snapshots (Ranked by GEO Score):**",
     ]
+
+    proposals_dir = Path(__file__).parent / "proposals"
+    proposals_dir.mkdir(exist_ok=True)
 
     # Scan competitors if provided
     competitor_results: list[dict] = []
@@ -255,7 +261,7 @@ def process_top_leads(prospects: list[Prospect], top_n: int = 2,
                 summary_lines.append(f"• **{prospect.name}** — scan failed ({scan_result['error']})")
                 continue
 
-            # Inject company name + vertical from prospect into scan result for PDF
+            # Inject company name + vertical from prospect into scan result
             scan_result["company"] = prospect.name or scan_result.get("company", "")
             scan_result["vertical"] = prospect.vertical or "default"
 
@@ -266,27 +272,45 @@ def process_top_leads(prospects: list[Prospect], top_n: int = 2,
             except Exception:
                 pass
 
-            pdf_path = generate_snapshot_pdf(scan_result, SNAPSHOTS_DIR,
-                                             competitors=competitor_results or None)
-            pdf_paths.append(pdf_path)
+            # Generate markdown snapshot
+            md = build_markdown(scan_result)
+            domain = extract_domain(prospect.url)
+            today_iso = date.today().isoformat()
+            md_filename = f"geo_snapshot_{domain}_{today_iso}.md"
+            md_path = proposals_dir / md_filename
+            md_path.write_text(md, encoding="utf-8")
+            md_paths.append(md_path)
 
             score_str = scan_result.get("overall_score", "N/A")
             grade_str = scan_result.get("grade", "N/A")
-            print(f"    ✓ PDF saved: {pdf_path} (GEO: {score_str}/10, Grade {grade_str})", flush=True)
+            print(f"    ✓ Markdown saved: {md_path} (GEO: {score_str}/10, Grade {grade_str})", flush=True)
+
+            # Optionally generate PDF
+            if generate_pdfs:
+                try:
+                    pdf_path = generate_snapshot_pdf(scan_result, SNAPSHOTS_DIR,
+                                                     competitors=competitor_results or None)
+                    pdf_paths.append(pdf_path)
+                    print(f"    ✓ PDF saved: {pdf_path}", flush=True)
+                except Exception as e:
+                    print(f"    ⚠️ PDF generation failed: {e}", flush=True)
 
             comp_note = ""
             if competitor_results:
                 comp_note = f" (vs {len(competitor_results)} competitor(s))"
+            pdf_note = f" | PDF: `{pdf_paths[-1].name}`" if pdf_paths else ""
             summary_lines.append(
                 f"• **#{i} {prospect.name}** — GEO {score_str}/10 (Grade {grade_str}){comp_note}\n"
-                f"  └─ PDF: `{pdf_path.name}`"
+                f"  └─ MD: `{md_path.name}`{pdf_note}"
             )
         except Exception as e:
             print(f"    ✗ Failed to generate snapshot for {prospect.url}: {e}", flush=True)
-            summary_lines.append(f"• **{prospect.name}** — PDF generation failed ({e})")
+            summary_lines.append(f"• **{prospect.name}** — snapshot generation failed ({e})")
 
-    print(f"\n✓ Generated {len(pdf_paths)} PDF snapshot(s) in {SNAPSHOTS_DIR}/", flush=True)
-    return pdf_paths, "\n".join(summary_lines)
+    print(f"\n✓ Generated {len(md_paths)} markdown snapshot(s) in {proposals_dir}/", flush=True)
+    if generate_pdfs:
+        print(f"✓ Generated {len(pdf_paths)} PDF snapshot(s) in {SNAPSHOTS_DIR}/", flush=True)
+    return md_paths, pdf_paths, "\n".join(summary_lines)
 
 
 def process_hot_leads(prospects: list[Prospect]) -> list[Path]:
@@ -447,16 +471,17 @@ Examples:
     else:
         all_prospects = prospects if 'prospects' in locals() else []
     
-    # Snapshot mode: rank all prospects, take top N, scan + PDF
+    # Snapshot mode: rank all prospects, take top N, scan + markdown snapshot
+    pdf_paths = []
     if not args.test and args.snapshot_top > 0 and all_prospects:
-        pdf_paths, snapshot_summary = process_top_leads(
+        md_paths, pdf_paths, snapshot_summary = process_top_leads(
             all_prospects, top_n=args.snapshot_top,
-            competitor_urls=args.competitors
+            competitor_urls=args.competitors,
+            generate_pdfs=False,  # Manual PDF generation only
         )
         if snapshot_summary:
-            # Append snapshot summary to Discord report
             report += "\n" + snapshot_summary
-            report += f"\n_Stored locally in: `{SNAPSHOTS_DIR}`_"
+            report += f"\n_Proposals ready in: `{Path(__file__).parent / 'proposals'}`_"
     
     # Legacy hot-lead processing (only when snapshot mode is OFF)
     elif not args.test and all_prospects:
@@ -478,7 +503,7 @@ Examples:
     # Write human-readable daily lead report
     if not args.test and all_prospects:
         try:
-            report_path = write_daily_report(all_prospects, pdf_paths=pdf_paths or [])
+            report_path = write_daily_report(all_prospects, md_paths=md_paths or [], pdf_paths=pdf_paths or [])
             print(f"\n📋 Daily lead report saved: {report_path}", flush=True)
             report_path_str = str(report_path)
         except Exception as e:

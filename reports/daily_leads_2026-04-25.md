@@ -12,38 +12,41 @@
 | 🔥 Hot (≥0.8) | 1 |
 | 🟡 Warm (0.5–0.79) | 1 |
 | 🔵 Cold (<0.5) | 0 |
+| 📄 Snapshots Ready | 1 |
 
 ## 🔥 Hot Leads (Action Required)
 
-### Test Firm A — Law Firm
+### Test — Law
 
 - **URL:** [https://example.com](https://example.com)
 - **Vertical:** PS
-- **Location:** NYC
+- **Location:** —
 - **GEO Score:** 0.85 / 1.0 (raw: 4/5)
 - **Priority:** 🔥 Hot
-- **Recommended Action:** Implement schema markup
+- **Recommended Action:** —
+
+  - 📄 [Snapshot MD](proposals/geo_snapshot_example_com_2026-04-25.md)
 
 
 **Top Gaps:**
   - No JSON-LD
-  - Thin content
 
 **Contacts:**
-  - 📧 contact@example.com
+  - No contacts found
 
 ---
 
 ## 🟡 Warm Leads
 
-### Test Brand B — DTC Beauty
+### Test2 — Beauty
 
 - **URL:** [https://test2.com](https://test2.com)
 - **Vertical:** DTC
-- **Location:** LA
+- **Location:** —
 - **GEO Score:** 0.55 / 1.0 (raw: 3/5)
 - **Priority:** 🟡 Warm
-- **Recommended Action:** Add FAQ page
+- **Recommended Action:** —
+
 
 
 **Top Gaps:**
@@ -58,10 +61,10 @@
 
 ## Quick Reference Table
 
-| Priority | Company | URL | Vertical | Score | Top Gap | PDF? |
-|----------|---------|-----|----------|-------|---------|------|
-| 🔥 | Test Firm A | [example.com](https://example.com) | PS | 0.85 | No JSON-LD | — |
-| 🟡 | Test Brand B | [test2.com](https://test2.com) | DTC | 0.55 | Missing FAQ | — |
+| Priority | Company | URL | Vertical | Score | Top Gap | Snapshot? |
+|----------|---------|-----|----------|-------|---------|-----------|
+| 🔥 | Test | [example.com](https://example.com) | PS | 0.85 | No JSON-LD | ✅ |
+| 🟡 | Test2 | [test2.com](https://test2.com) | DTC | 0.55 | Missing FAQ | — |
 
 ---
 
