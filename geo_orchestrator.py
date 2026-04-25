@@ -44,6 +44,7 @@ from shared.scoring import ScoringNormalizer
 from shared.output import DiscordFormatter, CRMFormatter
 from shared.airtable import export_prospects_to_airtable
 from shared.snapshot_pdf import generate_snapshot_pdf
+from shared.daily_report import write_daily_report
 from geo_scanner import scan_site_sync
 from shared.benchmarks import update_distribution
 
@@ -474,8 +475,22 @@ Examples:
         crm_data = CRMFormatter.format_prospects(all_prospects)
         export_prospects_to_airtable(crm_data['prospects'])
     
+    # Write human-readable daily lead report
+    if not args.test and all_prospects:
+        try:
+            report_path = write_daily_report(all_prospects, pdf_paths=pdf_paths or [])
+            print(f"\n📋 Daily lead report saved: {report_path}", flush=True)
+            report_path_str = str(report_path)
+        except Exception as e:
+            print(f"\n⚠️ Failed to write daily lead report: {e}", flush=True)
+            report_path_str = ""
+    else:
+        report_path_str = ""
+    
     # Send to Discord (unless test mode)
     if not args.test:
+        if report_path_str:
+            report += f"\n📋 Full lead report: `{report_path_str}`"
         send_to_discord(report, test_mode=False)
     
     print("\n" + "=" * 60, flush=True)
