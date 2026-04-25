@@ -402,6 +402,11 @@ Examples:
         help="1-3 competitor URLs to benchmark against in snapshots (e.g. --competitors https://rival1.com https://rival2.com)",
     )
     parser.add_argument(
+        "--auto-pdf",
+        action="store_true",
+        help="Also auto-generate PDFs for top leads (default: markdown only)",
+    )
+    parser.add_argument(
         "--list",
         action="store_true",
         help="List available verticals and exit",
@@ -477,7 +482,7 @@ Examples:
         md_paths, pdf_paths, snapshot_summary = process_top_leads(
             all_prospects, top_n=args.snapshot_top,
             competitor_urls=args.competitors,
-            generate_pdfs=False,  # Manual PDF generation only
+            generate_pdfs=args.auto_pdf,
         )
         if snapshot_summary:
             report += "\n" + snapshot_summary
