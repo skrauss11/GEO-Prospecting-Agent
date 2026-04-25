@@ -42,7 +42,7 @@ def test_imports() -> None:
         "tools", "geo_scoring", "discover", "geo_scanner",
         "shared.base", "shared.scoring", "shared.output", "shared.history",
         "verticals.professional_services", "verticals.dtc_ecommerce",
-        "geo_orchestrator", "ps_discovery", "dtc_discovery",
+        "geo_orchestrator",
     ]
     for mod in modules:
         try:

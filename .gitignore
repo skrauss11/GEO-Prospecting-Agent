@@ -16,6 +16,8 @@ snapshots/
 data/
 proposals/
 archive/
+research/
+reports/
 *.log
 geoscore_results.json
 geoscore_results.csv
@@ -24,6 +26,7 @@ previous_reports.json
 # IDE
 .vscode/
 .idea/
+.claude/
 
 # Dependencies
 venv/
