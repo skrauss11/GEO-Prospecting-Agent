@@ -3,20 +3,12 @@ Research Summarizer — Uses LLM to turn raw stories into actionable GEO intel.
 """
 
 import json
-import os
 from datetime import date
 from typing import Any
 
-from dotenv import load_dotenv
 from openai import OpenAI
 
-load_dotenv(override=True)
-
-# Nous API config
-NOUS_API_KEY = os.environ.get("NOUS_API_KEY", "")
-NOUS_BASE_URL = os.environ.get("NOUS_BASE_URL", "https://gateway.nous.uno/v1")
-DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL", "moonshotai/kimi-k2.6")
-
+from shared.config import NOUS_API_KEY, NOUS_BASE_URL, DEFAULT_MODEL
 
 SYSTEM_PROMPT = """\
 You are a GEO (Generative Engine Optimization) research analyst for MadTech Growth.

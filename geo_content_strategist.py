@@ -15,31 +15,23 @@ Usage:
 
 import argparse
 import json
-import os
 import sys
 from datetime import date
 from pathlib import Path
 from typing import Any
 
-from dotenv import load_dotenv
 from openai import OpenAI
 
-load_dotenv(override=True)
-
 sys.path.insert(0, str(Path(__file__).parent))
+from shared.config import DISCORD_WEBHOOK_URL, NOUS_API_KEY, NOUS_BASE_URL, DEFAULT_MODEL
 from shared.output import DiscordFormatter
 
-# ─── Config ───────────────────────────────────────────────────────────────────
+# ─── Config ─────────────────────────────────────────────────────────────────────────────
 
 OBSIDIAN_VAULT = Path.home() / "Desktop" / "ScottOS"
 FRAMEWORKS_DIR = OBSIDIAN_VAULT / "GEO Frameworks"
 OUTPUT_DIR = OBSIDIAN_VAULT / "Cron Outputs"
 CONTENT_DIR = OBSIDIAN_VAULT / "Claude Content"
-
-DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", "")
-NOUS_API_KEY = os.environ.get("NOUS_API_KEY", "")
-NOUS_BASE_URL = os.environ.get("NOUS_BASE_URL", "https://gateway.nous.uno/v1")
-DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL", "moonshotai/kimi-k2.6")
 
 SEARCH_QUERIES = [
     "Generative Engine Optimization GEO 2026",

@@ -16,12 +16,12 @@ Each vertical only provides:
 """
 
 import json
-import os
 from typing import Callable, Optional
 
 from openai import OpenAI
 
 from shared.base import Prospect
+from shared.config import NOUS_API_KEY, NOUS_BASE_URL, DEFAULT_MODEL
 from tools import TOOL_SCHEMAS, TOOL_DISPATCH
 
 # ── final_answer tool for clean agent termination ───────────────────────────
@@ -44,13 +44,7 @@ FINAL_ANSWER_SCHEMA = {
     },
 }
 
-# ── Nous API config ─────────────────────────────────────────────────────────
-
-NOUS_API_KEY = os.environ.get("NOUS_API_KEY", "")
-NOUS_BASE_URL = os.environ.get("NOUS_BASE_URL", "https://inference-api.nousresearch.com/v1")
-DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL", "moonshotai/kimi-k2.6")
-
-# ── Defaults ────────────────────────────────────────────────────────────────
+# ── Defaults ──────────────────────────────────────────────────────────────────────────
 
 DEFAULT_MAX_TURNS = 12
 DEFAULT_MAX_TOOLS = 10

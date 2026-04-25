@@ -22,20 +22,12 @@ Environment:
 
 import argparse
 import json
-import os
 import sys
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Optional
 
-from dotenv import load_dotenv
-
-# Load env before any other imports that might need it
-load_dotenv(override=True)
-
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent))
-
+from shared.config import DISCORD_WEBHOOK_URL
 from shared.base import BaseVertical, Prospect
 from verticals.professional_services import ProfessionalServicesVertical
 from verticals.dtc_ecommerce import DTCEcommerceVertical
@@ -50,11 +42,6 @@ from shared.benchmarks import update_distribution
 from generate_geo_report import build_markdown, extract_domain
 
 # Configuration
-NOUS_API_KEY = os.environ.get("NOUS_API_KEY", "")
-NOUS_BASE_URL = os.environ.get("NOUS_BASE_URL", "https://inference-api.nousresearch.com/v1")
-DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", "")
-
-# History file (shared across all verticals)
 HISTORY_FILE = Path(__file__).parent / "data" / "discovery_history.json"
 
 # Hot-lead snapshot output directory
