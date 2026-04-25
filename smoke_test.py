@@ -259,7 +259,7 @@ def test_tools_schema() -> None:
     print("\n🛠️  Tool Schemas")
     from tools import TOOL_SCHEMAS, TOOL_DISPATCH
 
-    names = [t["name"] for t in TOOL_SCHEMAS]
+    names = [t["function"]["name"] for t in TOOL_SCHEMAS]
     check("web_search schema", "web_search" in names)
     check("analyze_site_geo schema", "analyze_site_geo" in names)
     check("send_discord_report schema", "send_discord_report" in names)
