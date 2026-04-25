@@ -32,3 +32,28 @@ def get_openai_client():
             "NOUS_API_KEY is not set. Add it to your .env or environment."
         )
     return OpenAI(base_url=NOUS_BASE_URL, api_key=NOUS_API_KEY)
+
+
+def call_with_retry(fn, *, max_attempts: int = 3, base_delay: float = 2.0,
+                    label: str = "llm_call"):
+    """
+    Run `fn()` with exponential backoff on transient errors.
+    Retries on connection errors, timeouts, and 5xx responses.
+    Re-raises on the final attempt.
+    """
+    import time
+
+    from openai import APIConnectionError, APITimeoutError, InternalServerError, RateLimitError
+
+    transient = (APIConnectionError, APITimeoutError, InternalServerError, RateLimitError)
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return fn()
+        except transient as e:
+            if attempt == max_attempts:
+                print(f"    [{label}] gave up after {attempt} attempts: {e}", flush=True)
+                raise
+            delay = base_delay * (2 ** (attempt - 1))
+            print(f"    [{label}] attempt {attempt} failed ({type(e).__name__}); retrying in {delay:.1f}s", flush=True)
+            time.sleep(delay)

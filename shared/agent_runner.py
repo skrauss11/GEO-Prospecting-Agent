@@ -22,7 +22,7 @@ from urllib.parse import urlparse
 from openai import OpenAI
 
 from shared.base import Prospect
-from shared.config import NOUS_API_KEY, NOUS_BASE_URL, DEFAULT_MODEL
+from shared.config import NOUS_API_KEY, NOUS_BASE_URL, DEFAULT_MODEL, call_with_retry
 from tools import TOOL_SCHEMAS, TOOL_DISPATCH
 
 
@@ -104,11 +104,14 @@ def run_discovery_agent(
     for turn in range(max_turns):
         print(f"    [turn {turn + 1}] firms={firms_analyzed}/{count} tools={tool_call_count}", flush=True)
 
-        response = client.chat.completions.create(
-            model=model,
-            max_tokens=8096,
-            messages=messages,
-            tools=all_tools,
+        response = call_with_retry(
+            lambda: client.chat.completions.create(
+                model=model,
+                max_tokens=8096,
+                messages=messages,
+                tools=all_tools,
+            ),
+            label=f"agent_runner turn={turn + 1}",
         )
 
         assistant_msg = response.choices[0].message

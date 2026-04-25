@@ -35,6 +35,7 @@ from shared.history import UnifiedHistory
 from shared.scoring import ScoringNormalizer
 from shared.output import DiscordFormatter, CRMFormatter
 from shared.airtable import export_prospects_to_airtable
+from shared.judge import judge_prospects
 from shared.snapshot_pdf import generate_snapshot_pdf
 from shared.daily_report import write_daily_report
 from geo_scanner import scan_site_sync
@@ -71,6 +72,8 @@ def run_discovery(
     history: UnifiedHistory,
     test_mode: bool = False,
     count: int = 3,
+    judge_min_score: float = 0.0,
+    overfetch_multiplier: int = 1,
 ) -> tuple[str, list[Prospect]]:
     """
     Run discovery for a single vertical.
@@ -86,18 +89,31 @@ def run_discovery(
     exclude_urls = history.get_urls_for_vertical(vertical.key)
     print(f"  Excluding {len(exclude_urls)} previously discovered URLs", flush=True)
     
+    # Over-fetch when judging so we can drop low-quality matches
+    fetch_count = count * overfetch_multiplier if judge_min_score > 0 else count
+
     # Run the vertical's discovery
     prospects = vertical.discover(
-        count=count,
+        count=fetch_count,
         exclude_urls=exclude_urls,
         test_mode=test_mode,
     )
-    
+
     if not prospects:
         print(f"  ⚠️ No prospects discovered", flush=True)
         return f"_No prospects discovered for {vertical.name}_", []
-    
+
     print(f"  ✓ Discovered {len(prospects)} prospects", flush=True)
+
+    # Optional LLM-as-judge pass
+    if judge_min_score > 0 and not test_mode:
+        prospects = judge_prospects(prospects, vertical.key, min_score=judge_min_score)
+        # Sort by judge score and trim to requested count
+        prospects.sort(
+            key=lambda p: p._raw_analysis.get("judge_score", 0.0),
+            reverse=True,
+        )
+        prospects = prospects[:count]
     
     # Normalize scores across verticals
     normalizer = ScoringNormalizer()
@@ -123,6 +139,8 @@ def run_all_verticals(
     test_mode: bool = False,
     crm_mode: bool = False,
     count: int = 3,
+    judge_min_score: float = 0.0,
+    overfetch_multiplier: int = 1,
 ) -> dict[str, Any]:
     """Run discovery for all enabled verticals and combine results."""
     all_prospects: list[Prospect] = []
@@ -136,6 +154,8 @@ def run_all_verticals(
             history=history,
             test_mode=test_mode,
             count=count,
+            judge_min_score=judge_min_score,
+            overfetch_multiplier=overfetch_multiplier,
         )
         reports[vertical.key] = report
         all_prospects.extend(prospects)
@@ -396,6 +416,20 @@ Examples:
         help="Also auto-generate PDFs for top leads (default: markdown only)",
     )
     parser.add_argument(
+        "--judge-min-score",
+        type=float,
+        default=0.0,
+        metavar="SCORE",
+        help="LLM-as-judge ICP filter cutoff 0.0-1.0 (default: 0.0 = off). Try 0.6.",
+    )
+    parser.add_argument(
+        "--overfetch",
+        type=int,
+        default=2,
+        metavar="N",
+        help="When judging, fetch N× --count prospects then keep top --count (default: 2)",
+    )
+    parser.add_argument(
         "--list",
         action="store_true",
         help="List available verticals and exit",
@@ -434,6 +468,8 @@ Examples:
             test_mode=args.test,
             crm_mode=args.crm,
             count=args.count,
+            judge_min_score=args.judge_min_score,
+            overfetch_multiplier=args.overfetch,
         )
         report = result["discord_report"]
     else:
@@ -443,6 +479,8 @@ Examples:
             history=history,
             test_mode=args.test,
             count=args.count,
+            judge_min_score=args.judge_min_score,
+            overfetch_multiplier=args.overfetch,
         )
         
         # Generate CRM if requested
