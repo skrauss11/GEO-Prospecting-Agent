@@ -17,12 +17,23 @@ Each vertical only provides:
 
 import json
 from typing import Callable, Optional
+from urllib.parse import urlparse
 
 from openai import OpenAI
 
 from shared.base import Prospect
 from shared.config import NOUS_API_KEY, NOUS_BASE_URL, DEFAULT_MODEL
 from tools import TOOL_SCHEMAS, TOOL_DISPATCH
+
+
+def _normalize_domain(url: str) -> str:
+    """Strip scheme, www., and trailing slashes — return bare netloc lowercased."""
+    if not url:
+        return ""
+    if "://" not in url:
+        url = "https://" + url
+    netloc = urlparse(url).netloc.lower()
+    return netloc[4:] if netloc.startswith("www.") else netloc
 
 # ── final_answer tool for clean agent termination ───────────────────────────
 
@@ -173,9 +184,10 @@ def _filter_and_dedup(
     exclude_urls: list[str],
     count: int,
 ) -> list[Prospect]:
-    """Filter out excluded URLs and limit to `count` prospects."""
+    """Filter out excluded URLs (by normalized domain) and limit to `count` prospects."""
+    excluded_domains = {_normalize_domain(ex) for ex in exclude_urls if ex}
     filtered = [
         p for p in prospects
-        if not any(ex in p.url or p.url in ex for ex in exclude_urls)
+        if _normalize_domain(p.url) not in excluded_domains
     ]
     return filtered[:count]

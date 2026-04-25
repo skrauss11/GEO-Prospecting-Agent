@@ -50,9 +50,11 @@ SNAPSHOTS_DIR = Path(__file__).parent / "snapshots"
 # Available verticals registry
 VERTICALS: dict[str, type[BaseVertical]] = {
     "ps": ProfessionalServicesVertical,
-    "dtc": DTCEcommerceVertical,
     "professional_services": ProfessionalServicesVertical,
     "professional-services": ProfessionalServicesVertical,
+    "dtc": DTCEcommerceVertical,
+    "dtc_ecommerce": DTCEcommerceVertical,
+    "dtc-ecommerce": DTCEcommerceVertical,
 }
 
 
@@ -464,7 +466,8 @@ Examples:
         all_prospects = prospects if 'prospects' in locals() else []
     
     # Snapshot mode: rank all prospects, take top N, scan + markdown snapshot
-    pdf_paths = []
+    md_paths: list[Path] = []
+    pdf_paths: list[Path] = []
     if not args.test and args.snapshot_top > 0 and all_prospects:
         md_paths, pdf_paths, snapshot_summary = process_top_leads(
             all_prospects, top_n=args.snapshot_top,

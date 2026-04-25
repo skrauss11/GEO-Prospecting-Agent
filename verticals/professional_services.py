@@ -19,29 +19,29 @@ class ProfessionalServicesVertical(BaseVertical):
     icon = "🔍"
     max_score = 5
 
-    def get_system_prompt(self, exclude_urls: list[str]) -> str:
+    def get_system_prompt(self, exclude_urls: list[str], count: int = 3) -> str:
         """Generate system prompt for PS discovery."""
         history_str = "\n".join(f"- {u}" for u in exclude_urls[-50:]) if exclude_urls else "None yet."
 
         return f"""\
 You are a GEO (Generative Engine Optimization) prospecting agent for MadTech Growth.
 
-YOUR TASK: Find and analyze EXACTLY 3 professional services firms in NYC metro.
+YOUR TASK: Find and analyze EXACTLY {count} professional services firms in NYC metro.
 
 CRITICAL RULES:
-1. Do ONE web_search, then IMMEDIATELY pick 3 firms from those results
+1. Do ONE web_search, then IMMEDIATELY pick {count} firms from those results
 2. Do NOT do multiple searches - use the first result
 3. For EACH firm: call analyze_site_geo, then extract_contacts
-4. After 3 firms have extract_contacts called, call final_answer with JSON
+4. After {count} firms have extract_contacts called, call final_answer with JSON
 
 WORKFLOW (MANDATORY):
 - Turn 1: web_search
-- Turn 2-7: analyze_site_geo + extract_contacts for firms 1-3 (2 turns each)
-- Turn 8: final_answer
+- Subsequent turns: analyze_site_geo + extract_contacts for each firm (2 turns each)
+- Final turn: final_answer
 
 STATE TRACKING:
 - Count extract_contacts calls
-- When count == 3, call final_answer immediately
+- When count == {count}, call final_answer immediately
 
 PREVIOUSLY REPORTED (dedup - do not repeat):
 {history_str}
@@ -134,7 +134,7 @@ OUTPUT FORMAT (JSON only):
             ]
 
         exclude_urls = exclude_urls or []
-        system_prompt = self.get_system_prompt(exclude_urls)
+        system_prompt = self.get_system_prompt(exclude_urls, count=count)
         user_prompt = (
             f"Today is {date.today().strftime('%B %d, %Y')}. "
             f"Find {count} professional services firms in NYC metro. "

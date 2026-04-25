@@ -128,7 +128,7 @@ class BaseVertical(ABC):
         pass
     
     @abstractmethod
-    def get_system_prompt(self, exclude_urls: list[str]) -> str:
+    def get_system_prompt(self, exclude_urls: list[str], count: int = 3) -> str:
         """Get the system prompt for the LLM agent."""
         pass
     
