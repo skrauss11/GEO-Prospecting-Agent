@@ -16,6 +16,8 @@ Each vertical only provides:
 """
 
 import json
+from datetime import date, datetime
+from pathlib import Path
 from typing import Callable, Optional
 from urllib.parse import urlparse
 
@@ -24,6 +26,28 @@ from openai import OpenAI
 from shared.base import Prospect
 from shared.config import NOUS_API_KEY, NOUS_BASE_URL, DEFAULT_MODEL, call_with_retry
 from tools import TOOL_SCHEMAS, TOOL_DISPATCH
+
+
+TRACES_DIR = Path(__file__).resolve().parent.parent / "data" / "traces"
+
+
+def _persist_trace(label: str, messages: list, exit_reason: str, prospect_count: int) -> None:
+    """Save the agent message log to data/traces/ for debugging."""
+    try:
+        TRACES_DIR.mkdir(parents=True, exist_ok=True)
+        ts = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        safe_label = label.replace("/", "_").replace(" ", "_")
+        path = TRACES_DIR / f"{safe_label}_{ts}.json"
+        path.write_text(json.dumps({
+            "label": label,
+            "exit_reason": exit_reason,
+            "prospect_count": prospect_count,
+            "saved_at": datetime.now().isoformat(),
+            "messages": messages,
+        }, indent=2, default=str))
+        print(f"    [trace] saved: {path}", flush=True)
+    except Exception as e:
+        print(f"    [trace] save failed: {e}", flush=True)
 
 
 def _normalize_domain(url: str) -> str:
@@ -71,6 +95,7 @@ def run_discovery_agent(
     max_turns: int = DEFAULT_MAX_TURNS,
     max_tool_calls: int = DEFAULT_MAX_TOOLS,
     model: str = DEFAULT_MODEL,
+    trace_label: Optional[str] = None,
 ) -> list[Prospect]:
     """
     Run the OpenAI tool-calling agent loop for discovery.
@@ -89,6 +114,7 @@ def run_discovery_agent(
         Filtered + deduped list of Prospect objects (max `count`).
     """
     exclude_urls = exclude_urls or []
+    trace_label = trace_label or "agent"
 
     client = OpenAI(base_url=NOUS_BASE_URL, api_key=NOUS_API_KEY)
     all_tools = TOOL_SCHEMAS + [FINAL_ANSWER_SCHEMA]
@@ -100,6 +126,11 @@ def run_discovery_agent(
 
     firms_analyzed = 0
     tool_call_count = 0
+
+    def _finish(prospects: list[Prospect], exit_reason: str) -> list[Prospect]:
+        filtered = _filter_and_dedup(prospects, exclude_urls, count)
+        _persist_trace(trace_label, messages, exit_reason, len(filtered))
+        return filtered
 
     for turn in range(max_turns):
         print(f"    [turn {turn + 1}] firms={firms_analyzed}/{count} tools={tool_call_count}", flush=True)
@@ -127,7 +158,7 @@ def run_discovery_agent(
                     args = json.loads(tc.function.arguments)
                     output = args.get("report", "")
                     prospects = parse_fn(output)
-                    return _filter_and_dedup(prospects, exclude_urls, count)
+                    return _finish(prospects, "final_answer")
 
             # Append assistant message (model_dump preserves reasoning_content)
             assistant_dict = assistant_msg.model_dump()
@@ -175,11 +206,11 @@ def run_discovery_agent(
             # Agent finished without final_answer
             output = assistant_msg.content or ""
             prospects = parse_fn(output)
-            return _filter_and_dedup(prospects, exclude_urls, count)
+            return _finish(prospects, "no_final_answer")
 
     # Max turns exhausted
     print("    [!] Max turns reached, returning empty.", flush=True)
-    return []
+    return _finish([], "max_turns_exceeded")
 
 
 def _filter_and_dedup(

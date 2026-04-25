@@ -286,6 +286,44 @@ def test_verticals_test_mode() -> None:
     check("dtc test vertical", dtc_prospects[0].vertical == "dtc")
 
 
+def test_filter_and_dedup() -> None:
+    print("\n🧹 Domain Dedup Filter")
+    from shared.agent_runner import _filter_and_dedup, _normalize_domain
+    from shared.base import Prospect
+
+    # Domain normalization
+    check("normalize strips www", _normalize_domain("https://www.acme.com/") == "acme.com")
+    check("normalize lowercases", _normalize_domain("HTTPS://Acme.com") == "acme.com")
+    check("normalize handles bare host", _normalize_domain("acme.com") == "acme.com")
+    check("normalize empty", _normalize_domain("") == "")
+
+    def mkp(url: str) -> Prospect:
+        return Prospect(name=url, url=url, vertical="ps")
+
+    prospects = [
+        mkp("https://acme.com"),
+        mkp("https://www.beta.com/about"),
+        mkp("https://gamma.com"),
+    ]
+
+    # Excludes by exact domain
+    out = _filter_and_dedup(prospects, ["https://acme.com"], 10)
+    check("excludes exact match", len(out) == 2 and all(p.url != "https://acme.com" for p in out))
+
+    # Excludes despite www. + path differences
+    out = _filter_and_dedup(prospects, ["http://www.beta.com/contact"], 10)
+    check("excludes www+path variant", len(out) == 2 and all("beta.com" not in p.url for p in out))
+
+    # Does NOT over-filter on substring (the bug we fixed)
+    # "times.com" should not exclude "latimes.com"
+    out = _filter_and_dedup([mkp("https://latimes.com")], ["https://times.com"], 10)
+    check("substring no longer over-filters", len(out) == 1)
+
+    # Count cap is respected
+    out = _filter_and_dedup(prospects, [], 2)
+    check("count cap honored", len(out) == 2)
+
+
 def test_orchestrator_imports() -> None:
     print("\n🎛️  Orchestrator Imports")
     try:
@@ -313,6 +351,7 @@ def main():
     test_discover_filters()
     test_tools_schema()
     test_verticals_test_mode()
+    test_filter_and_dedup()
     test_orchestrator_imports()
 
     print("\n" + "=" * 50)

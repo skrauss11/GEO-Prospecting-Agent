@@ -147,4 +147,5 @@ OUTPUT FORMAT (JSON only):
             parse_fn=self.parse_agent_output,
             exclude_urls=exclude_urls,
             count=count,
+            trace_label=f"ps_{date.today().isoformat()}",
         )

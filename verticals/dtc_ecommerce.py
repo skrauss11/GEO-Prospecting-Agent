@@ -146,4 +146,5 @@ OUTPUT FORMAT (JSON only):
             parse_fn=self.parse_agent_output,
             exclude_urls=exclude_urls,
             count=count,
+            trace_label=f"dtc_{date.today().isoformat()}",
         )

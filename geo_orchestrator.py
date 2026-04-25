@@ -322,35 +322,6 @@ def process_top_leads(prospects: list[Prospect], top_n: int = 2,
     return md_paths, pdf_paths, "\n".join(summary_lines)
 
 
-def process_hot_leads(prospects: list[Prospect]) -> list[Path]:
-    """
-    Legacy: scan hot prospects (score >= 0.8) with geo_scanner and generate PDF snapshots.
-    Returns list of generated PDF paths.
-    """
-    hot = [p for p in prospects if p.normalized_score >= 0.8]
-    if not hot:
-        return []
-    
-    print(f"\n🔥 {len(hot)} hot lead(s) detected — generating PDF snapshots...", flush=True)
-    pdf_paths: list[Path] = []
-    
-    for prospect in hot:
-        try:
-            print(f"  Scanning {prospect.url}...", flush=True)
-            scan_result = scan_site_sync(prospect.url)
-            if scan_result.get("error"):
-                print(f"    ⚠️ Scan error: {scan_result['error']}", flush=True)
-                continue
-            pdf_path = generate_snapshot_pdf(scan_result, SNAPSHOTS_DIR)
-            pdf_paths.append(pdf_path)
-            print(f"    ✓ PDF saved: {pdf_path}", flush=True)
-        except Exception as e:
-            print(f"    ✗ Failed to generate snapshot for {prospect.url}: {e}", flush=True)
-    
-    print(f"\n✓ Generated {len(pdf_paths)} PDF snapshot(s) in {SNAPSHOTS_DIR}/", flush=True)
-    return pdf_paths
-
-
 def main():
     parser = argparse.ArgumentParser(
         description="Multi-Vertical GEO Discovery Orchestrator",
@@ -394,14 +365,14 @@ Examples:
     parser.add_argument(
         "--snapshot-top",
         type=int,
-        default=0,
+        default=2,
         metavar="N",
-        help="After discovery, rank prospects and generate PDF snapshots for the top N (default: 0 = off)",
+        help="After discovery, rank prospects and generate snapshots for top N (default: 2; pass 0 to disable)",
     )
     parser.add_argument(
-        "--snapshot",
+        "--no-snapshot",
         action="store_true",
-        help="Shorthand for --snapshot-top 2",
+        help="Disable snapshot generation (equivalent to --snapshot-top 0)",
     )
     parser.add_argument(
         "--competitors",
@@ -437,9 +408,9 @@ Examples:
     
     args = parser.parse_args()
     
-    # Resolve --snapshot shorthand
-    if args.snapshot and args.snapshot_top == 0:
-        args.snapshot_top = 2
+    # Resolve --no-snapshot
+    if args.no_snapshot:
+        args.snapshot_top = 0
     
     if args.list:
         print("Available verticals:")
@@ -515,18 +486,6 @@ Examples:
         if snapshot_summary:
             report += "\n" + snapshot_summary
             report += f"\n_Proposals ready in: `{Path(__file__).parent / 'proposals'}`_"
-    
-    # Legacy hot-lead processing (only when snapshot mode is OFF)
-    elif not args.test and all_prospects:
-        pdf_paths = process_hot_leads(all_prospects)
-        if pdf_paths:
-            snapshot_lines = [
-                "",
-                "📎 **Hot Lead Snapshots Generated:**",
-                *[f"• `{p.name}`" for p in pdf_paths],
-                f"_Stored locally in: `{SNAPSHOTS_DIR}`_",
-            ]
-            report += "\n".join(snapshot_lines)
     
     # Export to Airtable (only when --airtable flag is passed)
     if args.airtable and not args.test and all_prospects:

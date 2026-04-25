@@ -76,7 +76,7 @@ All jobs run via Hermes cron and deliver to `#hermes-agent`:
 | NYC Vertical Prospector | Daily 7:00 AM | `geo_orchestrator.py` (NYC) |
 | PS Discovery | Mon/Thu 8:00 AM | `geo_orchestrator.py --vertical ps` |
 | DTC Discovery | Wed/Sat 8:00 AM | `geo_orchestrator.py --vertical dtc` |
-| Snapshot Pipeline | Daily 8:00 AM | `geo_orchestrator.py --snapshot` |
+| Snapshot Pipeline | Daily 8:00 AM | `geo_orchestrator.py` (snapshot is default) |
 | Daily Briefing | Tue–Sat 9:00 AM | `geo_daily_briefing.py` |
 | Content Strategist | Daily 10:00 AM | `geo_content_strategist.py` |
 
