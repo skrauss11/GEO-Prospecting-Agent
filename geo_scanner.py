@@ -298,7 +298,14 @@ async def run_analysis(entries: list[dict], max_concurrency: int = 5) -> list[di
         async with semaphore:
             return await analyze_one(client, entry)
 
-    async with httpx.AsyncClient(timeout=20, follow_redirects=True) as client:
+    # Use a realistic browser UA + minimal headers — Cloudflare and other WAFs
+    # 403 the default httpx UA. We're only fetching publicly-accessible HTML.
+    browser_headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+    }
+    async with httpx.AsyncClient(timeout=20, follow_redirects=True, headers=browser_headers) as client:
         tasks = [limited_analyze(client, e) for e in entries]
         results = await asyncio.gather(*tasks)
 
