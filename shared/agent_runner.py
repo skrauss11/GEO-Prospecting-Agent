@@ -96,6 +96,7 @@ def run_discovery_agent(
     max_tool_calls: int = DEFAULT_MAX_TOOLS,
     model: str = DEFAULT_MODEL,
     trace_label: Optional[str] = None,
+    memory_context: Optional[str] = None,
 ) -> list[Prospect]:
     """
     Run the OpenAI tool-calling agent loop for discovery.
@@ -121,8 +122,10 @@ def run_discovery_agent(
 
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_prompt},
     ]
+    if memory_context:
+        messages.append({"role": "system", "content": memory_context})
+    messages.append({"role": "user", "content": user_prompt})
 
     firms_analyzed = 0
     tool_call_count = 0

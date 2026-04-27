@@ -33,6 +33,7 @@ from shared.base import BaseVertical, Prospect
 from verticals.professional_services import ProfessionalServicesVertical
 from verticals.dtc_ecommerce import DTCEcommerceVertical
 from shared.history import UnifiedHistory
+from shared.memory import build_memory_context
 from shared.scoring import ScoringNormalizer
 from shared.output import DiscordFormatter, CRMFormatter
 from shared.airtable import export_prospects_to_airtable
@@ -89,7 +90,13 @@ def run_discovery(
     # Get previously discovered URLs for this vertical
     exclude_urls = history.get_urls_for_vertical(vertical.key)
     print(f"  Excluding {len(exclude_urls)} previously discovered URLs", flush=True)
-    
+
+    # Build cross-run memory: summary of recent discoveries the LLM should know about
+    memory_context = build_memory_context(history, vertical.key, days=7)
+    if memory_context:
+        line_count = memory_context.count("\n")
+        print(f"  Memory context: {line_count} lines of prior-run summary", flush=True)
+
     # Over-fetch when judging so we can drop low-quality matches
     fetch_count = count * overfetch_multiplier if judge_min_score > 0 else count
 
@@ -98,6 +105,7 @@ def run_discovery(
         count=fetch_count,
         exclude_urls=exclude_urls,
         test_mode=test_mode,
+        memory_context=memory_context,
     )
 
     if not prospects:

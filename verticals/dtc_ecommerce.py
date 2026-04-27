@@ -114,6 +114,7 @@ OUTPUT FORMAT (JSON only):
         count: int = 3,
         exclude_urls: Optional[list[str]] = None,
         test_mode: bool = False,
+        memory_context: Optional[str] = None,
     ) -> list[Prospect]:
         """Run discovery for DTC/eCommerce."""
         if test_mode:
@@ -147,4 +148,5 @@ OUTPUT FORMAT (JSON only):
             exclude_urls=exclude_urls,
             count=count,
             trace_label=f"dtc_{date.today().isoformat()}",
+            memory_context=memory_context,
         )

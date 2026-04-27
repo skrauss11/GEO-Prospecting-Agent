@@ -86,6 +86,7 @@ GEO = **brand narrative control for the AI layer**. When consumers ask ChatGPT, 
 - **`shared/config.py`** — API keys, model defaults, retry logic
 - **`shared/cron_wrapper.py`** — `@cron_job` decorator: failure alerting + heartbeat tracking for every cron entrypoint
 - **`scripts/check_heartbeats.py`** — Watchdog that DMs Scott when any wrapped cron hasn't recorded a success within 1.25× its expected interval
+- **`shared/memory.py`** — Cross-run memory: summarizes the last 7 days of prospect discoveries (categories, gaps, top performers) into a system-prompt addendum so each orchestrator run builds on prior knowledge instead of starting amnesiac
 
 ### Vertical Implementations
 - **`verticals/professional_services.py`** — PS prompt + parser

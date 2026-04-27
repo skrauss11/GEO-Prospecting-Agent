@@ -113,15 +113,18 @@ class BaseVertical(ABC):
         count: int = 5,
         exclude_urls: Optional[list[str]] = None,
         test_mode: bool = False,
+        memory_context: Optional[str] = None,
     ) -> list[Prospect]:
         """
         Discover prospects for this vertical.
-        
+
         Args:
             count: Number of prospects to find
             exclude_urls: URLs to exclude (already discovered)
             test_mode: If True, use mock/simulated data
-            
+            memory_context: Optional summary of prior runs (passed to LLM as
+                additional system context). Built by `shared.memory`.
+
         Returns:
             List of Prospect objects
         """
