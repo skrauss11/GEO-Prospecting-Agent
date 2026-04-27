@@ -2,7 +2,7 @@
 // Receives: POST { name, email, url }
 // Action:   Analyzes URL across 8 GEO dimensions and emails HTML report.
 
-import nodemailer from 'nodemailer';
+// No external email dependency — uses Resend HTTP API via native fetch (Node 18+)
 
 const UA = 'Mozilla/5.0 (compatible; GEO-Snapshot/1.0; +https://madtechgrowth.com/bot)';
 const FETCH_TIMEOUT_MS = 15000;
@@ -389,47 +389,35 @@ function escapeHtml(s) {
 }
 
 async function sendEmail(name, email, url, analysis, scored) {
-  const host = process.env.SMTP_HOST;
-  const port = parseInt(process.env.SMTP_PORT || '587', 10);
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const apiKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.FROM_EMAIL || 'snapshot@email.madtechgrowth.com';
   const fromName = process.env.FROM_NAME || 'MadTech Growth';
 
-  if (!host || !user || !pass) {
-    throw new Error('SMTP env vars not configured (SMTP_HOST, SMTP_USER, SMTP_PASS).');
+  if (!apiKey) {
+    throw new Error('RESEND_API_KEY env var not set in Netlify dashboard.');
   }
 
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: { user, pass },
-  });
-
   const html = buildHtmlReport(name, email, url, analysis, scored);
-  const text = `GEO Snapshot Report
 
-Hi ${name},
-
-Your AI Visibility Score: ${scored.total}/10 (Grade: ${scored.grade})
-Readiness: ${scored.readiness}
-
-Site: ${url}
-
-Top Gaps:
-${scored.gaps.map((g) => '  - ' + g).join('\n')}
-
-Get your full audit at: https://madtechgrowth.com
-`;
-
-  await transporter.sendMail({
-    from: `"${fromName}" <${fromEmail}>`,
-    to: email,
-    subject: `Your GEO Snapshot for ${analysis.domain || 'your site'}`,
-    text,
-    html,
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: `${fromName} <${fromEmail}>`,
+      to: [email],
+      subject: `Your GEO Snapshot for ${analysis.domain || 'your site'}`,
+      html,
+      text: `GEO Snapshot Report\n\nHi ${name},\n\nYour AI Visibility Score: ${scored.total}/10 (Grade: ${scored.grade})\nReadiness: ${scored.readiness}\n\nSite: ${url}\n\nTop Gaps:\n${scored.gaps.map((g) => '  - ' + g).join('\n')}\n\nGet your full audit at: https://madtechgrowth.com`,
+    }),
   });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Resend API error ${res.status}: ${body}`);
+  }
 }
 
 const corsHeaders = {
