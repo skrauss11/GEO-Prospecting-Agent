@@ -84,6 +84,8 @@ GEO = **brand narrative control for the AI layer**. When consumers ask ChatGPT, 
 - **`shared/airtable.py`** — Airtable export
 - **`shared/benchmarks.py`** — Score distribution tracking
 - **`shared/config.py`** — API keys, model defaults, retry logic
+- **`shared/cron_wrapper.py`** — `@cron_job` decorator: failure alerting + heartbeat tracking for every cron entrypoint
+- **`scripts/check_heartbeats.py`** — Watchdog that DMs Scott when any wrapped cron hasn't recorded a success within 1.25× its expected interval
 
 ### Vertical Implementations
 - **`verticals/professional_services.py`** — PS prompt + parser
@@ -118,6 +120,22 @@ The orchestrator supports self-correction parameters:
 
 **Failure handling:** The orchestrator catches LLM parse errors, falls back to `_fallback_parse`, and continues. Discord delivery retries once. Scanner timeouts skip individual sites.
 
+**Cron-level reliability:** Every cron entrypoint is wrapped with `@cron_job(name, expected_interval_hours=N)` from `shared/cron_wrapper.py`. The wrapper:
+1. Records every attempt + success/error to `data/cron_heartbeat.json`
+2. Posts a 🚨 Discord alert (with traceback) to `DISCORD_DM_WEBHOOK_URL` on any unhandled exception
+3. Re-raises so cron logs still show non-zero exit
+
+A separate watchdog (`scripts/check_heartbeats.py`) runs every 6 hours and DMs Scott if any wrapped job hasn't recorded a success within 1.25× its expected interval — this catches the "Hermes silently stopped firing the job" failure mode that script-level try/except cannot.
+
+| Wrapped Job | Expected Interval | Staleness Threshold |
+|---|---|---|
+| `geo_kb_updater` | 24h | 30h |
+| `geo_orchestrator` | 24h | 30h |
+| `geo_content_strategist` | 24h | 30h |
+| `geo_daily_briefing` (Tue–Sat) | 72h | 90h |
+| `update_biz_state` (M–F) | 72h | 90h |
+| `cofounder_strategy_session` (Fri) | 168h | 210h |
+
 ---
 
 ## Persistent State & Memory
@@ -125,6 +143,7 @@ The orchestrator supports self-correction parameters:
 ### History & State
 - **`data/discovery_history.json`** — Exact-domain dedup (managed by `shared/history.py`)
 - **`data/agent_state.json`** — Agent decision state, failure streaks, notes
+- **`data/cron_heartbeat.json`** — Last attempt / success / status per wrapped cron job (managed by `shared/cron_wrapper.py`)
 - **`shared/benchmarks.json`** — Score distribution tracking
 
 ### Knowledge Base

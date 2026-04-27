@@ -23,6 +23,9 @@ DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL", "moonshotai/kimi-k2.6")
 
 # ─── Discord ─────────────────────────────────────────────────────────────────
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", "")
+# Fallback DM webhook for critical alerts (cron failures, watchdog warnings).
+# Falls back to the main webhook if not set, so alerts always go somewhere.
+DISCORD_DM_WEBHOOK_URL = os.environ.get("DISCORD_DM_WEBHOOK_URL", "") or DISCORD_WEBHOOK_URL
 
 
 def get_openai_client():

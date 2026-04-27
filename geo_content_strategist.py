@@ -24,6 +24,7 @@ from openai import OpenAI
 
 sys.path.insert(0, str(Path(__file__).parent))
 from shared.config import DISCORD_WEBHOOK_URL, NOUS_API_KEY, NOUS_BASE_URL, DEFAULT_MODEL
+from shared.cron_wrapper import cron_job
 from shared.output import DiscordFormatter
 
 # ─── Config ─────────────────────────────────────────────────────────────────────────────
@@ -466,6 +467,7 @@ def run_content_strategist(test_mode: bool = False) -> dict[str, Any]:
     return brief
 
 
+@cron_job("geo_content_strategist", expected_interval_hours=24)
 def main():
     parser = argparse.ArgumentParser(description="GEO Content Strategist")
     parser.add_argument("--test", action="store_true", help="Test mode with mock data")

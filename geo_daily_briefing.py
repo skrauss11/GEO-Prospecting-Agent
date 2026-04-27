@@ -12,6 +12,8 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from shared.cron_wrapper import cron_job
+
 KB_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "geo_knowledge_base.json")
 
 DISCORD_CHANNEL = "hermes-agent"  # posts to #hermes-agent
@@ -73,6 +75,7 @@ def build_briefing(kb):
     lines.append(f"_GEO Knowledge Base updated {kb.get('last_updated','unknown')}_")
     return "\n".join(lines)
 
+@cron_job("geo_daily_briefing", expected_interval_hours=72)
 def main():
     print(f"[geo_daily_briefing] {datetime.now().isoformat()}")
 

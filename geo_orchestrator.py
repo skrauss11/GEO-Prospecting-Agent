@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from shared.config import DISCORD_WEBHOOK_URL
+from shared.cron_wrapper import cron_job
 from shared.base import BaseVertical, Prospect
 from verticals.professional_services import ProfessionalServicesVertical
 from verticals.dtc_ecommerce import DTCEcommerceVertical
@@ -322,6 +323,7 @@ def process_top_leads(prospects: list[Prospect], top_n: int = 2,
     return md_paths, pdf_paths, "\n".join(summary_lines)
 
 
+@cron_job("geo_orchestrator", expected_interval_hours=24)
 def main():
     parser = argparse.ArgumentParser(
         description="Multi-Vertical GEO Discovery Orchestrator",

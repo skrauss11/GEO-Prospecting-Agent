@@ -10,6 +10,10 @@ import sys
 from datetime import date, datetime
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from shared.cron_wrapper import cron_job
+
 BIZ_STATE_PATH = Path.home() / "Desktop" / "ScottOS" / "Business State" / "biz_state.json"
 CRON_OUTPUTS_DIR = Path.home() / "Desktop" / "ScottOS" / "Cron Outputs"
 
@@ -31,6 +35,7 @@ def parse_last_snapshot():
         return mtime.isoformat()
     return None
 
+@cron_job("update_biz_state", expected_interval_hours=72)
 def main():
     state = load_state()
     

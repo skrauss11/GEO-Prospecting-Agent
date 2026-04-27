@@ -15,6 +15,8 @@ import re
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from shared.cron_wrapper import cron_job
+
 KB_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "geo_knowledge_base.json")
 KB_MD  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "GEO_KNOWLEDGE_BASE.md")
 
@@ -190,6 +192,7 @@ def rebuild_markdown(kb):
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
+@cron_job("geo_kb_updater", expected_interval_hours=24)
 def main():
     print(f"[geo_kb_updater] Starting — {datetime.now().isoformat()}")
 

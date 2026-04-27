@@ -10,8 +10,13 @@ Runs weekly (Friday 4-5 PM) to:
 """
 
 import json
+import sys
 from datetime import date, datetime
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from shared.cron_wrapper import cron_job
 
 BIZ_STATE_PATH = Path.home() / "Desktop" / "ScottOS" / "Business State" / "biz_state.json"
 CRON_OUTPUTS_DIR = Path.home() / "Desktop" / "ScottOS" / "Cron Outputs"
@@ -91,6 +96,7 @@ def write_session(insight, experiment, risk, question, state):
         f.write(content)
     return session_file
 
+@cron_job("cofounder_strategy_session", expected_interval_hours=168)
 def main():
     state = load_state()
     last_snapshot = get_last_snapshot_date()
