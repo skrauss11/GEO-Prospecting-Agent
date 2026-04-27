@@ -1,319 +1,166 @@
-#!/usr/bin/env python3
-"""
-Google Sheets integration for GEO Scanner.
-
-Handles:
-  - OAuth2 authentication with the client_secret JSON file
-  - Creating new spreadsheets
-  - Opening/appending to a persistent tracker spreadsheet
-  - Writing prospect rows and summary stats
-
-Spreadsheet ID is persisted at SHEETS_TRACKER_ID_FILE so subsequent runs
-append to the same tracker sheet.
-"""
+"""sheets_integration.py — GEO scanner Google Sheets tracker connector."""
 
 import json
 import os
 from pathlib import Path
+from datetime import date
 from typing import Optional
 
 import gspread
-from google.oauth2 import service_account
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
 
-# Path where the spreadsheet ID is persisted between runs
-SHEETS_TRACKER_ID_FILE = Path.home() / '.hermes' / 'geo_sheets_tracker_id.txt'
 SCOPES = [
-    'https://www.googleapis.com/auth/spreadsheets',
-    'https://www.googleapis.com/auth/drive.file',
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive.file",
+]
+
+TOKEN_PATH = Path.home() / ".hermes" / "google_sheets_token.json"
+TRACKER_ID_PATH = Path.home() / ".hermes" / "geo_sheets_tracker_id.txt"
+CLIENT_SECRET_PATHS = [
+    Path.home() / "Desktop" / "client_secret_347962967117-mmaob4or2vbh0k3fli2t6te25oke87fp.apps.googleusercontent.com.json",
+    Path.home() / "Downloads" / "client_secret_347962967117-mmaob4or2vbh0k3fli2t6te25oke87fp.apps.googleusercontent.com.json",
 ]
 
 
-# -----------------------------------------------------------------------------
-# Auth
-# -----------------------------------------------------------------------------
-
-
-def _get_client_secret_path() -> Optional[Path]:
-    """Look for the OAuth client secret JSON in common locations."""
-    candidates = [
-        Path.home() / 'Desktop' / 'client_secret_347962967117-mmaob4or2vbh0k3fli2t6te25oke87fp.apps.googleusercontent.com.json',
-        Path.home() / 'Downloads' / 'client_secret_347962967117-mmaob4or2vbh0k3fli2t6te25oke87fp.apps.googleusercontent.com.json',
-    ]
-    for p in candidates:
+def _get_credentials():
+    if TOKEN_PATH.exists():
+        info = json.loads(TOKEN_PATH.read_text())
+        return Credentials.from_authorized_user_info(info, SCOPES)
+    # No token — try client secret flow
+    for p in CLIENT_SECRET_PATHS:
         if p.exists():
-            return p
-    return None
+            from google_auth_oauthlib.flow import InstalledAppFlow
+            flow = InstalledAppFlow.from_client_secrets_file(str(p), SCOPES)
+            creds = flow.run_local_server(port=0)
+            TOKEN_PATH.parent.mkdir(parents=True, exist_ok=True)
+            TOKEN_PATH.write_text(json.dumps({
+                'token': creds.token,
+                'refresh_token': creds.refresh_token,
+                'token_uri': creds.token_uri,
+                'client_id': creds.client_id,
+                'client_secret': creds.client_secret,
+                'scopes': creds.scopes,
+                'universe_domain': creds.universe_domain,
+                'account': '',
+                'expiry': creds.expiry.isoformat() if creds.expiry else '',
+            }))
+            return creds
+    raise FileNotFoundError("No Google auth token or client_secret found.")
 
 
-def get_sheets_client() -> gspread.Client:
-    """Authenticate and return a gspread client."""
-    cred_path = _get_client_secret_path()
-    if not cred_path:
-        raise FileNotFoundError(
-            'OAuth client secret JSON not found. '
-            'Place it on Desktop or Downloads as '
-            'client_secret_347962...apps.googleusercontent.com.json'
-        )
+def _get_tracker_id(tracker_id: Optional[str] = None) -> str:
+    if tracker_id:
+        return tracker_id
+    if TRACKER_ID_PATH.exists():
+        return TRACKER_ID_PATH.read_text().strip()
+    raise FileNotFoundError(f"No tracker ID provided and {TRACKER_ID_PATH} not found.")
 
-    token_path = Path.home() / '.hermes' / 'google_sheets_token.json'
 
-    # Try to load existing token
-    if token_path.exists():
-        try:
-            creds = Credentials.from_authorized_user_info(
-                json.loads(token_path.read_text()), SCOPES
-            )
-            if creds and creds.valid:
-                return gspread.authorize(creds)
-        except Exception:
-            pass
-
-    # Do the OAuth flow using browser-based redirect
-    flow = InstalledAppFlow.from_client_secrets_file(str(cred_path), SCOPES)
-    creds = flow.run_local_server(port=0)
-
-    # Persist token
-    token_path.parent.mkdir(parents=True, exist_ok=True)
-    token_path.write_text(creds.to_json())
-
+def _init_client():
+    creds = _get_credentials()
     return gspread.authorize(creds)
 
 
-# -----------------------------------------------------------------------------
-# Spreadsheet management
-# -----------------------------------------------------------------------------
+def _get_or_create_tracker(gc, tracker_id: str, sheet_title: Optional[str] = None):
+    try:
+        doc = gc.open_by_key(tracker_id)
+    except gspread.exceptions.SpreadsheetNotFound:
+        # Create new
+        title = sheet_title or "GEO Prospect Tracker"
+        doc = gc.create(title)
+        ws = doc.sheet1
+        ws.append_row([
+            "Date", "Rank", "URL", "Company", "Vertical",
+            "Overall Score", "Grade", "LLM Readiness",
+            "Word Count", "Error",
+            "Structured Data", "AI Crawl", "Sitemap",
+            "Content Depth", "FAQ", "Headings",
+            "Semantic HTML", "Social Meta",
+            "Gaps", "Recommendations",
+        ])
+        ws.format('A1:T1', {'textFormat': {'bold': True}})
+        # Save ID for future use
+        TRACKER_ID_PATH.parent.mkdir(parents=True, exist_ok=True)
+        TRACKER_ID_PATH.write_text(doc.id)
+    return doc
 
 
-def get_tracker_id() -> Optional[str]:
-    """Return the persisted tracker spreadsheet ID, or None if not set."""
-    if SHEETS_TRACKER_ID_FILE.exists():
-        return SHEETS_TRACKER_ID_FILE.read_text().strip() or None
-    return None
-
-
-def save_tracker_id(spreadsheet_id: str) -> None:
-    """Persist the tracker spreadsheet ID."""
-    SHEETS_TRACKER_ID_FILE.parent.mkdir(parents=True, exist_ok=True)
-    SHEETS_TRACKER_ID_FILE.write_text(spreadsheet_id)
-
-
-def get_or_create_tracker(client: gspread.Client, new_sheet: bool = False,
-                          sheet_title: Optional[str] = None) -> gspread.Spreadsheet:
+def append_to_tracker(results, new_sheet=False, quiet=False, sheet_title=None, tracker_id=None):
     """
-    Return the tracker spreadsheet.
-    If new_sheet=True, always creates a fresh spreadsheet.
-    Otherwise opens the existing tracker or creates one named 'GEO Prospect Tracker'.
-    If sheet_title is provided, uses it as the title for new spreadsheets.
+    Append GEO scanner results to the Google Sheets tracker.
+    Returns the tracker sheet URL.
     """
+    gc = _init_client()
+    tid = _get_tracker_id(tracker_id)
+
     if new_sheet:
-        if sheet_title:
-            title = sheet_title
-        else:
-            title = f"GEO Prospect Tracker — {__import__('datetime').date.today().strftime('%b %d %Y')}"
-        ss = client.create(title)
-        save_tracker_id(ss.id)
-        _setup_spreadsheet(ss)
-        return ss
-
-    tracker_id = get_tracker_id()
-    if tracker_id:
-        try:
-            ss = client.open_by_key(tracker_id)
-            return ss
-        except gspread.SpreadsheetNotFound:
-            pass
-
-    # Create fresh tracker if none exists
-    title = 'GEO Prospect Tracker'
-    try:
-        ss = client.create(title)
-    except Exception:
-        # Might fail if client doesn't have Drive scope — create with a timestamp
-        title = f"GEO Prospect Tracker — {__import__('datetime').date.today().strftime('%b %d %Y')}"
-        ss = client.create(title)
-    save_tracker_id(ss.id)
-    _setup_spreadsheet(ss)
-    return ss
-
-
-def _setup_spreadsheet(ss: gspread.Spreadsheet) -> None:
-    """Set up the spreadsheet tabs and headers."""
-    # Rename default sheet to Prospects
-    try:
-        sheet = ss.sheet1
-        sheet.update_title('Prospects')
-    except Exception:
-        pass
-
-    # Ensure Summary tab exists
-    try:
-        ss.add_worksheet('Summary', rows=30, cols=10)
-    except Exception:
-        pass
-
-    # Write headers
-    headers = [
-        'Rank', 'URL', 'Company', 'Vertical', 'Overall Score', 'Grade',
-        'LLM Readiness', 'Word Count',
-        'Structured Data', 'AI Crawl Access', 'Sitemap Quality',
-        'Content Depth', 'FAQ Content', 'Heading Structure',
-        'Semantic HTML', 'Social Meta',
-        'Top Gaps', 'Recommendations', 'Date Scanned',
-    ]
-    try:
-        ss.sheet1.insert_row(headers, 1)
-    except Exception:
-        pass
-
-    try:
-        summary = ss.worksheet('Summary')
-        summary.update(values=[
-            ['GEO Prospect Summary', ''],
-            ['Generated', ''],
-            ['Total Sites Scored', ''],
-            ['Average Score', ''],
-            ['Score Range', ''],
-            ['Grade Distribution', ''],
-            ['', ''],
-            ['Top Gaps (count)', ''],
-        ], range_name='A1')
-        summary.update(values='GEO Prospect Summary', range_name='A1')
-    except Exception:
-        pass
-
-
-# -----------------------------------------------------------------------------
-# Writing results
-# -----------------------------------------------------------------------------
-
-
-def write_results(ss: gspread.Spreadsheet, results: list[dict], quiet: bool = False) -> None:
-    """Append scored results to the Prospects tab and update Summary."""
-    scored = [r for r in results if r.get('overall_score') is not None]
-    if not scored:
-        return
-
-    today = __import__('datetime').date.today().strftime('%Y-%m-%d')
-
-    # Build rows for Prospects sheet
-    rows = []
-    for i, r in enumerate(scored, 1):
-        dims = r.get('dimensions', {})
-        row = [
-            i,                                          # Rank
-            r.get('url', ''),                          # URL
-            r.get('company', ''),                      # Company
-            r.get('vertical', ''),                     # Vertical
-            r.get('overall_score', ''),                # Overall Score
-            r.get('grade', ''),                        # Grade
-            r.get('llm_readiness', ''),                # LLM Readiness
-            r.get('word_count', ''),                   # Word Count
-            dims.get('structured_data', {}).get('score', ''),
-            dims.get('ai_crawl_access', {}).get('score', ''),
-            dims.get('sitemap_quality', {}).get('score', ''),
-            dims.get('content_depth', {}).get('score', ''),
-            dims.get('faq_content', {}).get('score', ''),
-            dims.get('heading_structure', {}).get('score', ''),
-            dims.get('semantic_html', {}).get('score', ''),
-            dims.get('social_meta', {}).get('score', ''),
-            ' | '.join(r.get('gaps', [])[:3]),          # Top Gaps
-            ' | '.join(r.get('recommendations', [])[:3]),  # Recommendations
-            today,                                       # Date
-        ]
-        rows.append(row)
-
-    # Append to Prospects sheet
-    try:
-        prospects = ss.sheet1 if ss.sheet1.title == 'Prospects' else ss.worksheet('Prospects')
-        prospects.append_rows(rows)
-        if not quiet:
-            print(f"  → Appended {len(rows)} rows to 'Prospects' tab")
-    except Exception as e:
-        print(f"  ⚠ Could not write to Prospects tab: {e}")
-
-    # Update Summary tab
-    _update_summary(ss, scored, today, quiet)
-
-
-def _update_summary(ss: gspread.Spreadsheet, scored: list[dict], today: str, quiet: bool) -> None:
-    try:
-        summary = ss.worksheet('Summary')
-    except Exception:
-        return
-
-    total = len(scored)
-    avg = sum(r['overall_score'] for r in scored) / total
-    scores = [r['overall_score'] for r in scored]
-    grades = {}
-    for r in scored:
-        g = r.get('grade', '?')
-        grades[g] = grades.get(g, 0) + 1
-
-    grade_dist = ', '.join(f"{g}: {c}" for g, c in sorted(grades.items()))
-
-    # Count all gaps
-    gap_counts: dict[str, int] = {}
-    for r in scored:
-        for gap in r.get('gaps', []):
-            # Normalize gap to first 60 chars for grouping
-            short = gap[:60]
-            gap_counts[short] = gap_counts.get(short, 0) + 1
-    top_gaps = sorted(gap_counts.items(), key=lambda x: x[1], reverse=True)[:5]
-    gap_lines = [f"{g[:55]}... ({c})" if len(g) > 55 else f"{g} ({c})" for g, c in top_gaps]
-
-    summary_data = [
-        ['GEO Prospect Summary', ''],
-        ['Generated', today],
-        ['Total Sites Scored', total],
-        ['Average Score', round(avg, 1)],
-        ['Score Range', f"{min(scores)} – {max(scores)}"],
-        ['Grade Distribution', grade_dist],
-        ['', ''],
-        ['Top Gaps', 'Sites Affected'],
-        *[[g, c] for g, c in top_gaps],
-    ]
-
-    try:
-        summary.clear()
-        summary.update('A1', summary_data)
-        if not quiet:
-            print(f"  → Updated 'Summary' tab")
-    except Exception as e:
-        print(f"  ⚠ Could not update Summary tab: {e}")
-
-
-# -----------------------------------------------------------------------------
-# Convenience
-# -----------------------------------------------------------------------------
-
-
-def append_to_tracker(results: list[dict], new_sheet: bool = False,
-                      quiet: bool = False, sheet_title: Optional[str] = None,
-                      tracker_id: Optional[str] = None) -> str:
-    """
-    Main entry point from geo_scanner.py.
-    Authenticates, opens (or creates) the tracker, writes results.
-    Returns the spreadsheet URL.
-    If sheet_title is provided, uses it as the spreadsheet title (for new sheets).
-    If tracker_id is provided, writes directly to that spreadsheet (bypasses default tracker).
-    """
-    client = get_sheets_client()
-    if tracker_id:
-        ss = client.open_by_key(tracker_id)
-        if not quiet:
-            print(f"  → Writing to spreadsheet: {ss.url}")
+        title = sheet_title or f"GEO Prospect Tracker {date.today().isoformat()}"
+        doc = gc.create(title)
+        ws = doc.sheet1
+        ws.append_row([
+            "Date", "Rank", "URL", "Company", "Vertical",
+            "Overall Score", "Grade", "LLM Readiness",
+            "Word Count", "Error",
+            "Structured Data", "AI Crawl", "Sitemap",
+            "Content Depth", "FAQ", "Headings",
+            "Semantic HTML", "Social Meta",
+            "Gaps", "Recommendations",
+        ])
+        ws.format('A1:T1', {'textFormat': {'bold': True}})
+        TRACKER_ID_PATH.parent.mkdir(parents=True, exist_ok=True)
+        TRACKER_ID_PATH.write_text(doc.id)
     else:
-        ss = get_or_create_tracker(client, new_sheet=new_sheet, sheet_title=sheet_title)
-    write_results(ss, results, quiet=quiet)
-    return ss.url
+        doc = _get_or_create_tracker(gc, tid, sheet_title)
 
+    ws = doc.sheet1
+    today = date.today().isoformat()
+    scored = [r for r in results if r.get("overall_score") is not None]
+    errors = [r for r in results if r.get("overall_score") is None]
+    rows = []
+    for i, r in enumerate(scored, start=1):
+        dims = r.get("dimensions", {})
+        rows.append([
+            today,
+            i,
+            r.get("url", ""),
+            r.get("company", ""),
+            r.get("vertical", ""),
+            r.get("overall_score", ""),
+            r.get("grade", ""),
+            r.get("llm_readiness", ""),
+            r.get("word_count", ""),
+            r.get("error", ""),
+            dims.get("structured_data", {}).get("score", ""),
+            dims.get("ai_crawl_access", {}).get("score", ""),
+            dims.get("sitemap_quality", {}).get("score", ""),
+            dims.get("content_depth", {}).get("score", ""),
+            dims.get("faq_content", {}).get("score", ""),
+            dims.get("heading_structure", {}).get("score", ""),
+            dims.get("semantic_html", {}).get("score", ""),
+            dims.get("social_meta", {}).get("score", ""),
+            " | ".join(r.get("gaps", [])),
+            " | ".join(r.get("recommendations", [])),
+        ])
+    for r in errors:
+        rows.append([
+            today,
+            "",
+            r.get("url", ""),
+            r.get("company", ""),
+            r.get("vertical", ""),
+            "",
+            "",
+            "",
+            "",
+            r.get("error", ""),
+            "", "", "", "", "", "", "", "",
+            "", "",
+        ])
 
-if __name__ == '__main__':
-    # Test: create a dummy result
-    client = get_sheets_client()
-    print(f'Authenticated OK')
+    if rows:
+        ws.append_rows(rows, value_input_option="USER_ENTERED")
 
-    ss = get_or_create_tracker(client, new_sheet=False)
-    print(f'Tracker: {ss.url}')
+    if not quiet:
+        print(f"   Appended {len(rows)} rows to tracker.")
+
+    return f"https://docs.google.com/spreadsheets/d/{doc.id}/edit"

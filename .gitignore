@@ -19,6 +19,7 @@ archive/
 research/
 reports/
 *.log
+*.pid
 geoscore_results.json
 geoscore_results.csv
 previous_reports.json

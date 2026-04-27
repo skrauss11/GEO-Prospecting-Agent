@@ -7,12 +7,14 @@ duplicating os.environ.get calls.
 """
 
 import os
-
+from pathlib import Path
 from dotenv import load_dotenv
 
-# Load .env once, at module import time.  Modules that import shared.config
-# do not need their own load_dotenv() call.
-load_dotenv(override=True)
+# Load .env from the project root, regardless of current working directory.
+# This ensures cron jobs (which may execute from arbitrary cwd) still pick up
+# the correct configuration.
+_project_root = Path(__file__).resolve().parent.parent
+load_dotenv(_project_root / ".env", override=True)
 
 # ─── Nous Gateway ────────────────────────────────────────────────────────────
 NOUS_API_KEY = os.environ.get("NOUS_API_KEY", "")

@@ -6,3 +6,5 @@ fpdf2
 gspread
 google-auth-oauthlib
 playwright>=1.40
+discord.py>=2.3
+apscheduler>=3.10

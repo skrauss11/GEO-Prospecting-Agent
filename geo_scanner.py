@@ -40,7 +40,6 @@ import llms_txt
 
 from discover import discover as run_discover
 from tools import TOOL_DISPATCH
-import sheets_integration
 
 
 def _normalize_url(url: str) -> str:
@@ -517,13 +516,19 @@ def main():
     # --- Google Sheets output ---
     if args.sheets or args.new_sheet or args.tracker_id:
         print()
-        new_tracker = args.new_sheet
-        sheet_title = args.title if args.title else None
-        tracker_url = sheets_integration.append_to_tracker(
-            results, new_sheet=new_tracker, quiet=args.quiet, sheet_title=sheet_title,
-            tracker_id=args.tracker_id)
-        if not args.quiet:
-            print(f"   Results written to: {tracker_url}")
+        try:
+            import sheets_integration
+        except ImportError:
+            print("⚠️  Google Sheets integration unavailable (sheets_integration.py not found). Skipping.")
+            sheets_integration = None
+        if sheets_integration:
+            new_tracker = args.new_sheet
+            sheet_title = args.title if args.title else None
+            tracker_url = sheets_integration.append_to_tracker(
+                results, new_sheet=new_tracker, quiet=args.quiet, sheet_title=sheet_title,
+                tracker_id=args.tracker_id)
+            if not args.quiet:
+                print(f"   Results written to: {tracker_url}")
 
 
 def scan_site_sync(url: str) -> dict:
@@ -534,6 +539,16 @@ def scan_site_sync(url: str) -> dict:
     import asyncio
     entry = {"url": url}
     return asyncio.run(run_analysis([entry], max_concurrency=1))[0]
+
+
+async def scan_site_async(url: str) -> dict:
+    """
+    Asynchronous wrapper to scan a single site.
+    Use this when already inside an asyncio event loop.
+    """
+    entry = {"url": url}
+    results = await run_analysis([entry], max_concurrency=1)
+    return results[0]
 
 
 if __name__ == "__main__":

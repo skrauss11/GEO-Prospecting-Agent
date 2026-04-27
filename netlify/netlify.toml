@@ -1,0 +1,10 @@
+// netlify.toml — Netlify configuration for MadTech Growth functions
+[build]
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# Environment variables (set via Netlify dashboard):
+# RESEND_API_KEY = your_resend_api_key_here
+# NETLIFY_FUNCTION_URL = https://your-site.netlify.app/.netlify/functions/send-snapshot

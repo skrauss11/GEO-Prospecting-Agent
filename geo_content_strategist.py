@@ -42,6 +42,52 @@ SEARCH_QUERIES = [
     "agentic commerce protocol MCP ACP UCP 2026",
 ]
 
+# Expanded rotation pool — base queries that get date-filtered at runtime.
+# We rotate 6 per day to ensure variety without overwhelming search APIs.
+QUERY_POOL = [
+    "Generative Engine Optimization GEO",
+    "GEO SEO AI search optimization",
+    "Answer Engine Optimization AEO",
+    "ChatGPT Perplexity brand citations",
+    "AI search optimization enterprise",
+    "agentic commerce protocol MCP ACP UCP",
+    "LLM citations brand visibility 2026",
+    "semantic SEO AI overviews optimization",
+    "AI search ranking factors enterprise",
+    "Perplexity AI search brand mentions",
+    "GEO framework digital marketing strategy",
+    "AI mediated discovery B2B sales",
+    "generative AI search impact on brands",
+    "structured data AI search optimization",
+    "schema markup LLM optimization",
+]
+
+
+def _get_todays_queries(count: int = 6) -> list[str]:
+    """
+    Rotate queries deterministically by day + append date recency filters.
+    Ensures we don't run the exact same 6 queries every day.
+    """
+    today = date.today()
+    day_index = today.toordinal()  # deterministic day-based offset
+
+    # Shuffle deterministically using day_index as seed
+    import random
+    rng = random.Random(day_index)
+    shuffled = QUERY_POOL[:]
+    rng.shuffle(shuffled)
+
+    # Take the first 'count' queries
+    selected = shuffled[:count]
+
+    # Append date recency filter to each query
+    # Use "past 24 hours" for weekday runs, "past week" for weekends
+    # to account for lower publishing volume on Sat/Sun.
+    recency = "past 24 hours" if today.weekday() < 5 else "past week"
+
+    dated_queries = [f"{q} {recency}" for q in selected]
+    return dated_queries
+
 
 def web_search(query: str, limit: int = 5) -> list[dict]:
     """Fetch web search results via Hermes tool wrapper."""
@@ -63,6 +109,30 @@ def fetch_geo_articles(max_per_query: int = 3) -> list[dict[str, Any]]:
     articles = []
     seen_urls = set()
 
+    # Cross-day dedup: skip URLs from yesterday's brief so we don't re-propose
+    # the same source articles day after day.
+    yesterday = date.today().isoformat()
+    # Find the most recent brief file before today
+    brief_files = sorted(OUTPUT_DIR.glob("geo_content_brief_*.md"), reverse=True)
+    for bf in brief_files:
+        if yesterday not in bf.name:
+            try:
+                content = bf.read_text(encoding="utf-8")
+                import re
+                urls = re.findall(r'https?://[^\s\)>\]]+', content)
+                seen_urls.update(urls)
+                print(f"  ℹ️ Excluding {len(urls)} URL(s) from prior brief: {bf.name}")
+            except Exception:
+                pass
+            break  # Only need the most recent prior brief
+
+    # Build today's rotated + date-filtered queries
+    todays_queries = _get_todays_queries(count=6)
+    print(f"  Today's queries ({len(todays_queries)}):")
+    for q in todays_queries:
+        print(f"    • {q}")
+    print()
+
     # Try Hermes web_search first (available in cron environment)
     hermes_available = True
     try:
@@ -72,7 +142,7 @@ def fetch_geo_articles(max_per_query: int = 3) -> list[dict[str, Any]]:
         print("  ℹ️ hermes_tools not available locally; falling back to RSS/Reddit fetch\n")
 
     if hermes_available:
-        for query in SEARCH_QUERIES:
+        for query in todays_queries:
             results = web_search(query, limit=max_per_query + 2)
             for r in results:
                 url = r.get("url", "")
