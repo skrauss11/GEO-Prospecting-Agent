@@ -40,9 +40,10 @@ from shared.airtable import export_prospects_to_airtable
 from shared.judge import judge_prospects
 from shared.snapshot_pdf import generate_snapshot_pdf
 from shared.daily_report import write_daily_report
-from geo_scanner import scan_site_sync
 from shared.benchmarks import update_distribution
+from shared.enrichment import enrich_prospects
 from generate_geo_report import build_markdown, extract_domain
+from geo_scanner import scan_site_sync
 
 # Configuration
 HISTORY_FILE = Path(__file__).parent / "data" / "discovery_history.json"
@@ -415,6 +416,11 @@ Examples:
         action="store_true",
         help="List available verticals and exit",
     )
+    parser.add_argument(
+        "--enrich",
+        action="store_true",
+        help="Enrich discovered prospects with Hunter.io contact data (marketing/growth titles first)",
+    )
     
     args = parser.parse_args()
     
@@ -436,10 +442,15 @@ Examples:
     print("=" * 60, flush=True)
     print("GEO Multi-Vertical Discovery Orchestrator", flush=True)
     print(f"Date: {date.today().strftime('%B %d, %Y')}", flush=True)
+    mode_parts = []
     if args.snapshot_top > 0:
-        print(f"Mode: Discover → Rank → Snapshot Top {args.snapshot_top}", flush=True)
-        if args.competitors:
-            print(f"Competitors: {', '.join(args.competitors)}", flush=True)
+        mode_parts.append(f"Snapshot Top {args.snapshot_top}")
+    if args.enrich:
+        mode_parts.append("Hunter Enrichment")
+    if args.competitors:
+        mode_parts.append(f"vs {len(args.competitors)} competitor(s)")
+    if mode_parts:
+        print(f"Mode: {' → '.join(mode_parts)}", flush=True)
     print("=" * 60, flush=True)
     
     # Run discovery
@@ -483,6 +494,13 @@ Examples:
         all_prospects = result.get("prospects", [])
     else:
         all_prospects = prospects if 'prospects' in locals() else []
+    
+    # Enrich with Hunter.io contacts (marketing/growth titles first)
+    if not args.test and args.enrich and all_prospects:
+        print(f"\n🔍 Enriching {len(all_prospects)} prospects with Hunter.io...", flush=True)
+        all_prospects = enrich_prospects(all_prospects)
+        enriched_count = sum(1 for p in all_prospects if p.emails)
+        print(f"✓ Enrichment complete: {enriched_count}/{len(all_prospects)} prospects have contact emails", flush=True)
     
     # Snapshot mode: rank all prospects, take top N, scan + markdown snapshot
     md_paths: list[Path] = []
