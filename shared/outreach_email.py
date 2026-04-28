@@ -41,37 +41,37 @@ BRAND = {
 # AI search share-of-voice) rather than just technical SEO jargon.
 HOOKS = {
     "schema": [
-        "I was mapping the AI search landscape for {city} {search_context}s and noticed {company} isn't being recommended by ChatGPT or Perplexity. The underlying issue is technical: your site lacks the structured data (Schema.org) these models need to confidently cite your services and locations.",
-        "When buyers ask AI assistants for '{search_context} near me', the models scan for structured data to decide who to recommend. Right now {company} has zero JSON-LD markup. This means your competitors are effectively capturing the AI citations you should be getting."
+        "I was mapping the AI search landscape for {city} {search_context}s and noticed {company} has zero Schema.org / JSON-LD markup. This is where established firms are paying an 'AI bureaucracy tax' — agile competitors are moving fast to add this structured data, making it much easier for ChatGPT and Perplexity to parse and recommend their services over yours for highly specific queries.",
+        "When buyers ask AI assistants for '{search_context} near me', the models scan the live web for structured data to decide who fits best. {company}'s site currently has no JSON-LD markup. In AI search, legacy brand recognition is losing ground to technical agility, and faster-moving competitors are capturing the citations you should be getting."
     ],
     "sitemap": [
-        "I noticed {company} is missing from key AI search recommendations on platforms like ChatGPT and Perplexity. The root cause appears structural — without a complete sitemap.xml, AI crawlers can't fully index your practice areas or team bios to cite them.",
-        "I was reviewing {company}'s AI search visibility and found that AI crawlers are struggling to index your site due to a missing or incomplete sitemap. When buyers research {search_context}s via LLMs, your firm's depth of expertise is largely invisible to the models."
+        "I noticed {company}'s sitemap is missing or incomplete. In the AI search era, we're seeing smaller, faster-moving competitors use optimized sitemaps to spoon-feed their service pages directly to Perplexity and ChatGPT. Because your site lacks this structure, AI models are increasingly citing these agile competitors for deep expertise queries instead of you.",
+        "I was reviewing {company}'s AI search visibility and found that AI crawlers are struggling to index your site due to an incomplete sitemap. While large firms often move slower to fix technical debt, nimble competitors are exploiting this exact gap to steal share-of-voice in AI-generated answers."
     ],
     "faq": [
-        "When buyers ask AI assistants about {search_context} services, the models heavily favor Q&A-formatted content. Because {company}'s site lacks a structured FAQ, competitors are currently controlling the AI-generated answers in your space.",
-        "I noticed {company} doesn't have an FAQ section. In the era of AI search, that's a missed opportunity: LLMs like ChatGPT pull directly from Q&A formats to answer complex buyer questions. Without it, you're absent from those early-stage research conversations."
+        "When buyers ask AI assistants complex questions about {search_context} services, the models heavily favor Q&A-formatted content. Because {company} lacks a structured FAQ, we're seeing faster-moving competitors exploit this gap — providing the exact format LLMs prefer to cite, and stealing visibility from established market leaders.",
+        "I noticed {company} doesn't have an FAQ section. In AI search, brand equity doesn't automatically win. Instead, LLMs like ChatGPT pull directly from structured Q&A formats to answer buyer questions. Without it, you are absent from those early-stage research conversations while agile competitors take the citations."
     ],
     "bot_blocked": [
-        "I noticed {company} is actively blocking AI crawlers (like GPTBot) in your robots.txt. While this protects IP, it also completely removes your firm from the consideration set when executives use ChatGPT or Copilot to research {city} {search_context}s.",
-        "Your site is currently blocking major AI crawlers. The trade-off for protecting your content is total invisibility in generative search. When a buyer asks Perplexity to recommend a {search_context}, {company} simply cannot be suggested."
+        "I noticed {company} is actively blocking AI crawlers (like GPTBot) in your robots.txt. While this protects IP, it blinds AI engines to your current expertise. Agile competitors are making sure platforms like Perplexity can crawl their latest capabilities, meaning they win the live queries while established firms get skipped.",
+        "Your site is currently blocking major AI crawlers. The trade-off for protecting your content is that AI engines fall back to citing whatever they can read right now. We're seeing faster-moving competitors keep their sites open to these bots, allowing them to capture the AI recommendations that should go to industry leaders."
     ],
     "thin_content": [
-        "AI models (like ChatGPT and Perplexity) rely on content depth to establish authority. Right now, {company}'s homepage is too light on context (~{word_count} words) for these models to confidently recommend you over competitors for {vertical} queries.",
-        "I was analyzing {company}'s AI visibility and noticed the homepage content is quite sparse. LLMs use depth as a proxy for expertise; without richer context about your services, the models will default to recommending your more verbose competitors."
+        "AI models (like ChatGPT and Perplexity) rely on content depth to confidently recommend a firm. Right now, {company}'s homepage is quite light on context (~{word_count} words). We're seeing a shift where nimble competitors out-rank established giants in AI search simply by structuring deep, rich context that the LLMs can easily digest.",
+        "I was analyzing {company}'s AI visibility and noticed the core pages are quite sparse. LLMs use content depth as a primary proxy for expertise. While established firms lean on reputation, agile competitors are winning AI citations by providing the exhaustive detail that generative engines are specifically looking for."
     ],
     "heading": [
-        "I ran an AI visibility parse on {company} and noticed the page heading structure is broken. Because AI models rely heavily on H1/H2 hierarchy to understand what a firm actually does, this technical gap is preventing LLMs from accurately citing your services."
+        "I ran an AI visibility parse on {company} and noticed the page heading structure is broken. Because AI models rely heavily on H1/H2 hierarchy to understand a firm's core offerings, this technical debt creates a 'bureaucracy tax' where faster competitors with clean code are easily grabbing the featured citations."
     ],
     "social_meta": [
-        "I noticed {company} is missing OpenGraph meta tags. While it seems minor, LLMs synthesize results for '{search_context} in {city}' by evaluating technical discipline and metadata. Missing tags act as a negative signal, pushing your firm lower in AI-generated recommendations."
+        "I noticed {company} is missing OpenGraph meta tags. While it seems minor, LLMs synthesize results for '{search_context} in {city}' by evaluating technical discipline. Missing tags act as a negative signal. Right now, faster-moving competitors are optimizing these technical details and pulling ahead in AI-generated recommendations."
     ],
     "llms.txt": [
-        "I was looking at {company}'s site and noticed you haven't implemented an llms.txt file yet. It's still early, but forward-thinking {search_context}s are adding these to explicitly tell AI crawlers how to summarize their firm. It's a low-effort way to control your brand narrative in ChatGPT."
+        "I was looking at {company}'s site and noticed you haven't implemented an llms.txt file yet. It's early, but agile {search_context}s are already adding these to explicitly tell AI crawlers how to summarize their firm. It's a low-effort way to bypass the 'bureaucracy tax' and control your brand narrative in ChatGPT before the giants catch up."
     ],
     "generic": [
-        "I ran an AI visibility audit on {company} and found several infrastructure gaps preventing LLMs from understanding and recommending the firm. In a market where buyers are shifting from traditional search to AI assistants, this directly impacts top-of-funnel discovery.",
-        "Most {search_context}s haven't optimized for AI search yet — {company} included. The window to establish a first-mover advantage is open, but it requires fixing the technical signals that AI crawlers rely on to cite your firm."
+        "I ran an AI visibility audit on {company} and found several infrastructure gaps. Right now, there is a serious 'bureaucracy tax' in AI search: agile competitors are adapting their sites for ChatGPT and Perplexity in weeks, while established firms lag. Those faster firms are capturing the early-stage buyer recommendations that should belong to you.",
+        "Most legacy {search_context}s haven't optimized for AI search yet — {company} included. The window to establish a first-mover advantage is open. While large competitors wait for committee approvals, fixing the technical signals that AI crawlers rely on is the fastest way to steal disproportionate share-of-voice."
     ],
 }
 
