@@ -36,42 +36,42 @@ BRAND = {
     "clay_soft": "#F5E0DA",
 }
 
-# ── Hook templates by gap category ────────────────────────────────────────────
-# Each hook references a specific GEO gap.  2-3 variants per category so we
-# can randomize and avoid robotic repetition.
+# ── Hook templates by gap category ──────────────────────────────────────────
+# Each hook is specific to the gap, references real search queries a buyer
+# would type, and ties the problem directly to lost deal flow.
 HOOKS = {
     "schema": [
-        "I ran a quick audit of {company}'s AI visibility and noticed the site has zero structured data markup. LLMs typically skip sites they can't parse — which means {company} may be invisible in AI search results despite the brand recognition.",
-        "I checked how AI agents see {company}'s site and found no Schema.org / JSON-LD markup. That makes it hard for LLMs to understand services, practice areas, or geography — three things buyers ask about.",
+        "I checked how AI search engines see {company} and found zero Schema.org / JSON-LD markup. That matters because when someone asks ChatGPT or Perplexity for 'the best {search_context} firm in {city}' the AI needs structured data to understand your services, locations, and ratings. Without it, {company} simply doesn't show up in those answers \u2014 even though your reputation offline is strong.",
+        "When prospects ask AI assistants for '{search_context} firm near me' the model scans for structured data to decide who to recommend. {company}'s site has none \u2014 no LocalBusiness schema, no service markup, no attorney/organization markup. That means your competitors with basic JSON-LD are getting the citations you should be getting.",
     ],
     "sitemap": [
-        "{company}'s site doesn't appear to have a complete sitemap.xml. Without one, AI crawlers struggle to discover and index content depth — especially important for a firm with {company}'s breadth.",
-        "I noticed {company}'s sitemap is either missing or thin. For a firm of your size, that's a signal AI crawlers use to deprioritize you in generated answers.",
+        "{company}'s site is missing a proper sitemap.xml. That matters because AI crawlers like GPTBot and PerplexityBot rely on sitemaps to discover service pages, attorney bios, and location pages. Without one, those pages may never get indexed by AI search \u2014 which means when someone searches '{search_context} firm {city}' the model has no record of {company}'s depth.",
+        "I noticed {company}'s sitemap is either missing or incomplete. For a firm with {company}'s practice breadth, that's a bottleneck: AI crawlers can only surface what they can find, and if your service pages, thought leadership, and team pages aren't in the sitemap, they're invisible to LLMs.",
     ],
     "faq": [
-        "{company} has no FAQ section. That's a problem because LLMs prioritize Q&A content when generating answers to 'best [service] in [city]' queries — exactly the queries your clients are typing.",
-        "There's no FAQ content on {company}'s site. Competitors with structured Q&A are more likely to be cited by AI agents answering prospect questions.",
+        "{company} has no FAQ content. That's a direct visibility loss because LLMs prioritize Q&A format when answering searches like 'how much does {article} {search_context} firm cost in {city}' or 'what should I look for in {article} {search_context} firm.' Firms with FAQ pages get quoted verbatim in AI-generated answers. {company} is missing from those conversations entirely.",
+        "Buyers now ask AI assistants specific questions before they ever call a firm: 'what's the difference between audit and assurance' or 'do I need {article} {search_context} firm for X.' Without an FAQ section, {company} has no content in the format LLMs prefer to cite. Competitors who do are effectively answering your prospects before you get a chance to.",
     ],
     "bot_blocked": [
-        "{company} is blocking AI crawlers in robots.txt. I get the instinct, but it also removes you from Perplexity, ChatGPT search, and every emerging AI search engine.",
-        "I saw that {company} blocks GPTBot and ClaudeBot. That protects content but also guarantees zero visibility in AI-driven search — a fast-growing traffic source for professional services.",
+        "{company} is blocking AI crawlers in robots.txt \u2014 specifically GPTBot and ClaudeBot. That may feel like protecting IP, but the trade-off is total exclusion from ChatGPT search, Perplexity, and Copilot. These platforms are now where senior buyers research firms before RFPs. Blocking them means {company} isn't even in the consideration set when someone asks 'who are the top {search_context} firms.'",
+        "I saw that {company} blocks major AI crawlers. The risk isn't content theft \u2014 it's invisibility. When a CFO asks Perplexity 'which {search_context} firm has the best reputation in {city}' and {company} isn't indexed, the AI simply recommends your competitors. You're not losing a click; you're losing the query entirely.",
     ],
     "thin_content": [
-        "{company}'s homepage is light on content — only ~{word_count} words. LLMs reward depth; a thin page reduces the chance you'll be quoted or recommended.",
-        "The homepage copy is only ~{word_count} words. For LLMs trying to understand what {company} does, that's not enough signal to rank you above competitors with richer pages.",
+        "{company}'s homepage is only ~{word_count} words. For an LLM trying to understand what {company} does, who you serve, and why you're different, that's barely a signal. When buyers ask AI 'which {search_context} firm specializes in {vertical}' the model needs content depth to make the connection. A thin homepage means {company} doesn't make the shortlist.",
+        "The homepage has ~{word_count} words. Compare that to competitors who have 1,500+ words describing services, case studies, and team credentials. LLMs use content depth as a proxy for authority. A sparse homepage signals to AI that {company} isn't a primary source \u2014 so it recommends firms with richer pages instead.",
     ],
     "heading": [
-        "{company}'s heading structure needs work. Missing or duplicated H1s make it hard for AI to understand page hierarchy — and that's how it decides priority in answers.",
+        "{company}'s heading structure is broken \u2014 missing H1s or multiple conflicting ones. LLMs use heading hierarchy to understand page importance and topic focus. When someone asks 'what services does {company} offer' the AI can't extract a clear answer because the headings don't structure the information. Competitors with clean hierarchy get the featured citation.",
     ],
     "social_meta": [
-        "No OpenGraph tags on {company}'s site. That hurts sharing, but more importantly it signals to AI that page context is weak.",
+        "No OpenGraph tags on {company}'s site. That hurts social sharing, but more importantly it signals to AI that page context hasn't been curated. When LLMs synthesize results for 'best {search_context} firm in {city}' they prefer pages with complete metadata because it indicates editorial attention. Missing OG tags is a small signal of a larger content discipline gap.",
     ],
-    "llms_txt": [
-        "{company} doesn't have an llms.txt file. It's still early, but firms that add one now are building a moat before it becomes standard.",
+    "llms.txt": [
+        "{company} doesn't have an llms.txt file. It's early, but forward-thinking firms are adding them now to tell AI crawlers exactly what they do, who they serve, and how to contact them. It's like a robots.txt for the AI era. Firms that adopt it early will have a structured advantage before it becomes standard.",
     ],
     "generic": [
-        "I ran an AI visibility audit on {company} and found several gaps that are making it harder for LLMs to understand and recommend the firm.",
-        "Most professional services firms haven't optimized for AI search yet — {company} included. The good news is that the window to lead is still open.",
+        "I ran an AI visibility audit on {company} and found several infrastructure gaps that are making it harder for LLMs to understand and recommend the firm. The issue isn't content quality \u2014 it's that the technical signals AI crawlers rely on are either missing or misconfigured. In a market where buyers now ask AI before they ask Google, that's a real funnel problem.",
+        "Most professional services firms haven't optimized for AI search yet \u2014 {company} included. The window to establish first-mover advantage is open because your competitors are in the same position. But the window closes as firms wake up to the fact that AI search is now a primary discovery channel for enterprise buyers.",
     ],
 }
 
@@ -82,18 +82,18 @@ CTAS = [
     "I can send a free GEO Snapshot that breaks down {company}'s AI visibility across all 8 dimensions. Takes two minutes to read, gives you a 90-day roadmap. Interested?",
 ]
 
-# ── Signatures ────────────────────────────────────────────────────────────────
+# ── Signatures ────────────────────────────────────────────────────────────────────────
 SIG = """Scott Krauss
 Founder, MadTech Growth
-Agentic Commerce Advisory for Professional Services
-hello@madtechgrowth.com | madtechgrowth.com
+AI Visibility for Professional Services
+scott@madtechgrowth.com | madtechgrowth.com
 """
 
 SIG_HTML = f"""<div style="margin-top:32px;padding-top:20px;border-top:1px solid {BRAND['line']};">
   <p style="margin:0;font-size:14px;color:{BRAND['ink']};font-weight:600;">Scott Krauss</p>
   <p style="margin:4px 0 0;font-size:13px;color:{BRAND['muted']};">Founder, MadTech Growth</p>
-  <p style="margin:2px 0 0;font-size:13px;color:{BRAND['muted']};">Agentic Commerce Advisory for Professional Services</p>
-  <p style="margin:8px 0 0;font-size:13px;"><a href="mailto:hello@madtechgrowth.com" style="color:{BRAND['sage_deep']};text-decoration:none;">hello@madtechgrowth.com</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="https://madtechgrowth.com" style="color:{BRAND['sage_deep']};text-decoration:none;">madtechgrowth.com</a></p>
+  <p style="margin:2px 0 0;font-size:13px;color:{BRAND['muted']};">AI Visibility for Professional Services</p>
+  <p style="margin:8px 0 0;font-size:13px;"><a href="mailto:scott@madtechgrowth.com" style="color:{BRAND['sage_deep']};text-decoration:none;">scott@madtechgrowth.com</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="https://madtechgrowth.com" style="color:{BRAND['sage_deep']};text-decoration:none;">madtechgrowth.com</a></p>
 </div>"""
 
 
@@ -121,17 +121,93 @@ def _map_gap_to_key(gap: str) -> str:
     return "generic"
 
 
-def _build_hook(gaps: list[str], company: str, word_count: int = 0) -> str:
+def _infer_context(company: str, website: str) -> tuple[str, str, str, str]:
+    """Infer search context base noun, article, city, and vertical from company/website."""
+    comp_lower = company.lower()
+    site_lower = website.lower()
+
+    # Known firm mappings (base noun only, no "firm" suffix)
+    known = {
+        "rsm": "accounting",
+        "wiss": "accounting",
+        "anchin": "accounting",
+        "deloitte": "accounting",
+        "pwc": "accounting",
+        "ey ": "accounting",
+        "kpmg": "accounting",
+        "bdo": "accounting",
+        "grant thornton": "accounting",
+        "kasowitz": "law",
+        "skadden": "law",
+        "sullivan": "law",
+        "cravath": "law",
+        "latham": "law",
+        "kirkland": "law",
+        "capco": "consulting",
+        "mckinsey": "consulting",
+        "bain": "consulting",
+        "bcg": "consulting",
+    }
+
+    base = None
+    for key, ctx in known.items():
+        if key in comp_lower or key in site_lower:
+            base = ctx
+            break
+
+    if not base:
+        if "law" in comp_lower or "llp" in comp_lower or "torres" in comp_lower:
+            base = "law"
+        elif "cpa" in site_lower or "accounting" in comp_lower or "audit" in comp_lower:
+            base = "accounting"
+        elif "consult" in comp_lower or "advisory" in comp_lower:
+            base = "consulting"
+        elif "wealth" in comp_lower or "financial" in comp_lower:
+            base = "wealth management"
+        else:
+            base = "professional services"
+
+    article = "an" if base[0] in "aeiou" else "a"
+
+    # Vertical (for thin_content template)
+    if base == "law":
+        vertical = "real estate litigation"
+    elif base == "accounting":
+        vertical = "tax advisory"
+    elif base == "consulting":
+        vertical = "digital transformation"
+    else:
+        vertical = "advisory"
+
+    city = "New York"
+    return base, article, city, vertical
+
+
+def _build_hook(gaps: list[str], company: str, word_count: int = 0, search_context: str = "", article: str = "a", city: str = "", vertical: str = "") -> str:
     """Pick the most specific hook from the first 2 gaps."""
     for gap in gaps[:2]:
         key = _map_gap_to_key(gap)
         templates = HOOKS.get(key, HOOKS["generic"])
         tmpl = random.choice(templates)
         try:
-            return tmpl.format(company=company, word_count=word_count)
+            return tmpl.format(
+                company=company,
+                word_count=word_count,
+                search_context=search_context,
+                article=article,
+                city=city,
+                vertical=vertical,
+            )
         except KeyError:
             continue
-    return random.choice(HOOKS["generic"]).format(company=company)
+    return random.choice(HOOKS["generic"]).format(
+        company=company,
+        word_count=word_count,
+        search_context=search_context,
+        article=article,
+        city=city,
+        vertical=vertical,
+    )
 
 
 def _build_subject(company: str, gap_key: str) -> str:
@@ -215,9 +291,12 @@ def generate_outreach_email(
 
     first_name = contact_name.split()[0] if contact_name else "there"
 
+    # Infer search context from company/website
+    search_context, article, city, vertical = _infer_context(company, website)
+
     # Hook
     word_count = prospect.get("word_count", 0)
-    hook = _build_hook(gaps, company, word_count)
+    hook = _build_hook(gaps, company, word_count, search_context, article, city, vertical)
     gap_key = _map_gap_to_key(gaps[0]) if gaps else "generic"
 
     # CTA
@@ -266,7 +345,7 @@ def generate_outreach_email(
 
       <!-- Footer -->
       <tr><td style="text-align:center;padding:24px 0 0;">
-        <p style="font-size:11px;color:{BRAND['muted']};margin:0;line-height:1.6;">MadTech Growth · New York, NY<br/>You're receiving this because your firm matches our target profile for AI visibility optimization.</p>
+        <p style="font-size:11px;color:{BRAND['muted']};margin:0;line-height:1.6;">MadTech Growth · New York, NY</p>
       </td></tr>
     </table>
   </td></tr>
