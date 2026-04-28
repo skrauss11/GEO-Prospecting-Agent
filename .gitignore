@@ -24,6 +24,9 @@ geoscore_results.json
 geoscore_results.csv
 previous_reports.json
 
+# Generated client outreach emails
+outreach_*.html
+
 # IDE
 .vscode/
 .idea/
