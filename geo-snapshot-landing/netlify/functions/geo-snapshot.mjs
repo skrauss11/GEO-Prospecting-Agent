@@ -463,17 +463,23 @@ export const handler = async (event) => {
     };
   }
 
+  let emailOk = false;
+  let emailError = null;
   try {
     await sendEmail(name, email, url, analysis, scored);
+    emailOk = true;
   } catch (e) {
     console.error('[geo-snapshot] Email send failed:', e);
+    emailError = e.message || String(e);
   }
 
   return {
     statusCode: 200,
     headers: corsHeaders,
     body: JSON.stringify({
-      message: `GEO Snapshot sent to ${email}`,
+      message: emailOk ? `GEO Snapshot sent to ${email}` : `Analysis complete, but email delivery failed: ${emailError}`,
+      emailSent: emailOk,
+      emailError: emailError,
       score: scored.total,
       grade: scored.grade,
       readiness: scored.readiness,

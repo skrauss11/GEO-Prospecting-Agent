@@ -387,6 +387,12 @@
       nav.classList.toggle('scrolled', window.scrollY > 10);
     });
 
+    function esc(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
     const form = document.getElementById('snapshot-form');
     const submitBtn = document.getElementById('submit-btn');
     const formState = document.getElementById('form-state');
@@ -434,9 +440,26 @@
           throw new Error(err.message || 'Something went wrong.');
         }
 
+        const data = await res.json();
+
         sentTo.textContent = email;
         loadingState.classList.remove('visible');
-        successState.classList.add('visible');
+
+        if (data.emailSent) {
+          successState.classList.add('visible');
+        } else {
+          // Email failed — show score + warning instead of false success
+          const warnDiv = document.createElement('div');
+          warnDiv.style.cssText = 'background:#F3EEE4;border:1px solid #C45D3E;border-radius:12px;padding:24px;margin-top:1rem;text-align:left;';
+          warnDiv.innerHTML = `
+            <h3 style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:#1A1D1E;margin-bottom:0.5rem;">⚠ Email delivery failed</h3>
+            <p style="font-size:0.9rem;color:#3B3F42;margin-bottom:1rem;">${esc(data.emailError || 'Unknown error')}</p>
+            <p style="font-size:0.95rem;color:#1A1D1E;"><strong>Your GEO Score:</strong> <span style="color:#C45D3E;font-size:1.2rem;">${data.score}/10</span> (Grade ${data.grade})</p>
+            <p style="font-size:0.85rem;color:#7A7568;margin-top:0.8rem;">Contact us at <a href="mailto:hello@madtechgrowth.com" style="color:#C45D3E;">hello@madtechgrowth.com</a> and we'll send your snapshot manually.</p>
+          `;
+          document.getElementById('success-state').appendChild(warnDiv);
+          document.getElementById('success-state').classList.add('visible');
+        }
       } catch (err) {
         alert('Error: ' + err.message + '\n\nPlease try again or email us at hello@madtechgrowth.com');
         formState.style.display = 'block';
