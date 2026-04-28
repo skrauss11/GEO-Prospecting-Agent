@@ -47,7 +47,7 @@ _TIER_1_KEYWORDS = [
     "business development",
 ]
 
-# Tier 2 — CEO / Founder (fallback, final resort)
+# Tier 2 — CEO / Founder / Partner (fallback, final resort)
 _TIER_2_KEYWORDS = [
     "ceo",
     "chief executive",
@@ -56,6 +56,10 @@ _TIER_2_KEYWORDS = [
     "cofounder",
     "president",
     "managing director",
+    "partner",
+    "principal",
+    "managing partner",
+    "senior partner",
 ]
 
 # Explicitly excluded — never pick these
