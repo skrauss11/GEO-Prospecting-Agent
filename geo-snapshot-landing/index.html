@@ -76,14 +76,10 @@
       border-bottom-color: var(--line);
       background: rgba(250, 247, 242, 0.92);
     }
-    .nav-logo {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.25rem;
-      color: var(--ink);
-      text-decoration: none;
-      letter-spacing: -0.02em;
+    .nav-logo img {
+      height: 36px;
+      display: block;
     }
-    .nav-logo span { color: var(--sage-deep); }
     .nav-cta {
       display: inline-flex; align-items: center; gap: 0.5rem;
       padding: 0.58rem 1.1rem;
@@ -305,7 +301,9 @@
 <body>
 
   <nav id="site-nav">
-    <a href="https://madtechgrowth.com" class="nav-logo">MadTech<span>Growth</span></a>
+    <a href="https://madtechgrowth.com" class="nav-logo" aria-label="MadTech Growth homepage">
+      <img src="https://madtechgrowth.com/dark_logo_transparent_background.png" alt="MadTech Growth">
+    </a>
     <a href="https://madtechgrowth.com" class="nav-cta">← Back to site</a>
   </nav>
 
